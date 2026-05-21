@@ -1,0 +1,33 @@
+Atue como um desenvolvedor backend Python sênior. Faça o scaffolding de um novo bot assíncrono para Telegram, projetado especificamente para atuar como um "Secretary Bot" através da API do Telegram Business.
+
+**Stack e Dependências:**
+- Crie um arquivo `requirements.txt` fixando a dependência: `python-telegram-bot>=21.1`.
+
+**Arquitetura e Requisitos do Código (`main.py`):**
+
+1. **Configuração e Variáveis de Ambiente:**
+   - Implemente um *fail-fast*: o sistema deve abortar a execução imediatamente caso a variável de ambiente `TELEGRAM_TOKEN` não seja encontrada usando a biblioteca `os`.
+   - Configure a biblioteca nativa `logging` no nível INFO para rastrear requisições e facilitar o debug no stdout.
+
+2. **Inicialização (Entry Point):**
+   - Utilize o `ApplicationBuilder` para instanciar o bot.
+   - No loop principal, garanta que o método `app.run_polling()` seja chamado com `allowed_updates=Update.ALL_TYPES` para que os webhooks de business connection não sejam descartados pela API.
+
+3. **Core Logic e Event Handling:**
+   - Crie uma função assíncrona com type hints rigorosos (`Update`, `ContextTypes.DEFAULT_TYPE`) para interceptar as mensagens.
+   - Utilize um `MessageHandler` genérico que passe por essa função.
+   - Implemente *Guard Clauses (Early Returns)* para isolar a lógica de negócios:
+     a) Retorne imediatamente se `update.business_message` for nulo.
+     b) Retorne imediatamente se a mensagem for enviada por outro bot (`business_message.from_user.is_bot`).
+     c) Retorne imediatamente se o ID do remetente for igual ao ID do próprio bot (prevenção de loop infinito de respostas).
+
+4. **Processamento do Payload e Resposta:**
+   - Extraia o `chat_id` e, obrigatoriamente, o `business_connection_id` do objeto `business_message`.
+   - Utilize `context.bot.send_message` para disparar uma resposta automática padrão (ex: "Olá, sou o assistente automatizado...").
+   - É mandatório passar o parâmetro `business_connection_id` no envio para garantir que o routing da mensagem saia pela conta comercial atrelada.
+
+5. **Resiliência:**
+   - Envolva a chamada da API de envio de mensagem em um bloco `try/except`.
+   - Faça o log de qualquer exceção (ex: timeout, unathorized) sem quebrar o loop de eventos do bot.
+
+Entregue o código limpo, modularizado, aderente à PEP-8 e devidamente comentado.
