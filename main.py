@@ -34,10 +34,10 @@ if not TELEGRAM_TOKEN:
     logger.critical("Missing required environment variable: TELEGRAM_TOKEN")
     sys.exit(1)
 
-# Default auto-reply sent on every incoming business message.
+# Default reply sent on every incoming business message.
 AUTO_REPLY_TEXT = (
-    "Olá! Sou o assistente automatizado. "
-    "Sua mensagem foi recebida e em breve um atendente responderá."
+    "Oi! Tudo bem? Vi sua mensagem aqui, "
+    "estou só finalizando uma coisa e já te respondo direitinho. 🙏"
 )
 
 
