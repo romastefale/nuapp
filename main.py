@@ -137,6 +137,26 @@ async def on_business_connection(update: Update, context: ContextTypes.DEFAULT_T
     )
 
 
+async def _resolve_owner_id(
+    context: ContextTypes.DEFAULT_TYPE, business_connection_id: str
+) -> int | None:
+    """Return the business account owner's user id, learning it once if needed."""
+    owner_id = STATE.get("owner_user_id")
+    if owner_id:
+        return owner_id
+    try:
+        bc = await context.bot.get_business_connection(business_connection_id)
+    except Exception:
+        logger.exception("Could not fetch business connection %s", business_connection_id)
+        return None
+    if bc and bc.user:
+        STATE["owner_user_id"] = bc.user.id
+        _save_state(STATE)
+        logger.info("Learned business owner user_id=%s", bc.user.id)
+        return bc.user.id
+    return None
+
+
 async def handle_business_message(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> None:
@@ -149,13 +169,15 @@ async def handle_business_message(
         return
     if sender.id == context.bot.id:
         return
-    # Skip messages the user (business owner) sent themselves in the chat.
-    owner_id = STATE.get("owner_user_id")
-    if owner_id and sender.id == owner_id:
-        return
 
     business_connection_id = msg.business_connection_id
     if not business_connection_id:
+        return
+
+    # Skip messages the user (business owner) sent themselves in the chat.
+    owner_id = await _resolve_owner_id(context, business_connection_id)
+    if owner_id and sender.id == owner_id:
+        logger.info("Ignored outgoing message from business owner (user_id=%s)", owner_id)
         return
 
     if GROUP_CHAT_ID is None:
