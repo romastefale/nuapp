@@ -106,6 +106,19 @@ def _lookup_forward(group_msg_id: int) -> dict[str, Any] | None:
     return STATE["forwards"].get(str(group_msg_id))
 
 
+def _oldest_unanswered_forward() -> tuple[int, dict[str, Any]] | None:
+    """Return (group_msg_id, payload) for the oldest still-unanswered forward."""
+    pending = [
+        (int(mid), payload)
+        for mid, payload in STATE["forwards"].items()
+        if not payload.get("answered")
+    ]
+    if not pending:
+        return None
+    pending.sort(key=lambda item: item[0])
+    return pending[0]
+
+
 # ---------------------------------------------------------------------------
 # Handlers
 # ---------------------------------------------------------------------------
@@ -225,39 +238,78 @@ async def handle_business_message(
     )
 
 
-async def handle_group_reply(
+async def handle_group_message(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> None:
-    """Route replies inside the group back to the customer.
+    """Route group messages back to the customer.
 
-    Accepts BOTH Mira's automatic suggestion (a bot reply to the relayed
-    message) and the user's own manual reply. First one wins per forward.
+    - If the message is a Telegram reply to one of our forwarded messages,
+      use that forward as the target (works for both Mira and the user).
+    - If the message is NOT a reply but comes from a bot (i.e. Mira posted
+      a normal message after seeing the trigger), fall back to the oldest
+      still-unanswered forward. This is necessary because some bots do not
+      use Telegram's reply feature when answering.
+    First responder wins per forward.
     """
     msg = update.message
     if msg is None or msg.from_user is None:
         return
     if GROUP_CHAT_ID is None or msg.chat_id != GROUP_CHAT_ID:
         return
-    # Never echo our own bot's messages.
     if msg.from_user.id == context.bot.id:
         return
+
+    from_user = msg.from_user
+    sender_is_bot = from_user.is_bot
+    logger.info(
+        "Group msg id=%s from=%s(@%s,bot=%s) reply_to=%s text=%r",
+        msg.message_id,
+        from_user.id,
+        from_user.username,
+        sender_is_bot,
+        msg.reply_to_message.message_id if msg.reply_to_message else None,
+        (msg.text or msg.caption or "")[:80],
+    )
+
+    target_group_msg_id: int | None = None
+    entry: dict[str, Any] | None = None
+
     reply_to = msg.reply_to_message
-    if reply_to is None:
-        return
-    entry = _lookup_forward(reply_to.message_id)
-    if entry is None:
-        return
-    if entry.get("answered"):
-        # Already responded to this customer message; ignore extras.
+    if reply_to is not None:
+        candidate = _lookup_forward(reply_to.message_id)
+        if candidate is None:
+            logger.info(
+                "Reply target %s not in forwards table — ignoring.", reply_to.message_id
+            )
+            return
+        if candidate.get("answered"):
+            logger.info("Forward %s already answered — ignoring extra.", reply_to.message_id)
+            return
+        target_group_msg_id = reply_to.message_id
+        entry = candidate
+    elif sender_is_bot:
+        # Non-reply bot message: assume it's Mira answering the oldest pending one.
+        pending = _oldest_unanswered_forward()
+        if pending is None:
+            logger.info("Bot posted in group but no pending forward to attach to — ignoring.")
+            return
+        target_group_msg_id, entry = pending
+        logger.info(
+            "Bot %s posted without reply_to; attaching to oldest pending forward %s.",
+            from_user.username or from_user.id,
+            target_group_msg_id,
+        )
+    else:
+        # User wrote in the group without using "reply" — nothing to route.
         return
 
     text = msg.text or msg.caption
     if not text:
-        if not msg.from_user.is_bot:
+        if not sender_is_bot:
             await msg.reply_text("❌ Por enquanto só dá pra responder com texto.")
         return
 
-    source_is_mira = msg.from_user.is_bot
+    assert entry is not None and target_group_msg_id is not None
 
     try:
         await context.bot.send_message(
@@ -267,14 +319,20 @@ async def handle_group_reply(
         )
     except Exception as exc:  # noqa: BLE001
         logger.exception("Failed to deliver reply to customer: %s", exc)
-        if not source_is_mira:
+        if not sender_is_bot:
             await msg.reply_text(f"❌ Falha ao enviar: {exc}")
         return
 
     entry["answered"] = True
-    _remember_forward(reply_to.message_id, entry)
+    _remember_forward(target_group_msg_id, entry)
+    logger.info(
+        "Delivered reply to customer chat=%s (forward %s, source=%s)",
+        entry["chat_id"],
+        target_group_msg_id,
+        "IA" if sender_is_bot else "user",
+    )
 
-    source = "IA" if source_is_mira else "você"
+    source = "IA" if sender_is_bot else "você"
     try:
         await msg.reply_text(
             f"✅ Enviado para {entry['customer_name']} (por {source})"
@@ -311,14 +369,12 @@ def main() -> None:
         group=0,
     )
 
-    # Group 1 (separate dispatch group): handle replies posted inside the
+    # Group 1 (separate dispatch group): handle messages posted inside the
     # configured private group so they get routed back to the customer.
+    # We do NOT filter by REPLY here because some bots (e.g. Mira) answer
+    # with a plain message instead of using Telegram's reply feature.
     application.add_handler(
-        MessageHandler(filters.ChatType.GROUPS & filters.REPLY, handle_group_reply),
-        group=1,
-    )
-    application.add_handler(
-        MessageHandler(filters.ChatType.SUPERGROUP & filters.REPLY, handle_group_reply),
+        MessageHandler(filters.ChatType.GROUPS, handle_group_message),
         group=1,
     )
 
