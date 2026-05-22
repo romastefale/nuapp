@@ -257,15 +257,16 @@ async def handle_business_message(
     sender_handle = f" (@{sender.username})" if sender.username else ""
     body = msg.text or msg.caption or "(mensagem sem texto — mídia recebida)"
 
-    # IMPORTANT: the AI trigger ("Mira, …") MUST be the first thing in the
-    # message — the AI bot in the group only fires when its name appears at
-    # the very beginning. Customer context goes after. All user-provided
-    # strings are HTML-escaped so a `<` in a name/handle/body never breaks
-    # parse_mode=HTML on Telegram's side.
+    # Format must match the version that worked empirically (see JSON dumps
+    # 151252 / 151258): header first, customer message in <blockquote>,
+    # Mira prompt LAST. Putting the prompt at the end made Mira respond
+    # reliably; moving it to the top broke the flow. All user-provided
+    # strings are HTML-escaped so a `<` / `&` in a name/handle/body
+    # never breaks parse_mode=HTML on Telegram's side.
     relay_text = (
-        f"{MIRA_PROMPT}\n\n"
-        f"📩 De <b>{_html_escape(sender_name)}</b>{_html_escape(sender_handle)}:\n"
-        f"<blockquote>{_html_escape(body)}</blockquote>"
+        f"📩 <b>{_html_escape(sender_name)}</b>{_html_escape(sender_handle)}:\n"
+        f"<blockquote>{_html_escape(body)}</blockquote>\n"
+        f"{MIRA_PROMPT}"
     )
 
     try:
