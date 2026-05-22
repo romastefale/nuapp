@@ -394,8 +394,19 @@ def _html_escape(text: str) -> str:
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
+async def _post_init(application: Any) -> None:
+    """Log bot identity flags on startup so we can verify BotFather settings."""
+    try:
+        me = await application.bot.get_me()
+        logger.info("Bot getMe: %s", me.to_dict())
+    except Exception:
+        logger.exception("post_init getMe failed")
+
+
 def main() -> None:
-    application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
+    application = (
+        ApplicationBuilder().token(TELEGRAM_TOKEN).post_init(_post_init).build()
+    )
 
     # /id works anywhere — DM, group, business chat.
     application.add_handler(CommandHandler("id", cmd_id))
