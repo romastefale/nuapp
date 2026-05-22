@@ -249,7 +249,7 @@ async def handle_group_reply(
     entry["answered"] = True
     _remember_forward(reply_to.message_id, entry)
 
-    source = "Mira" if source_is_mira else "você"
+    source = "IA" if source_is_mira else "você"
     try:
         await msg.reply_text(
             f"✅ Enviado para {entry['customer_name']} (por {source})"
