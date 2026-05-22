@@ -1,0 +1,225 @@
+{
+  "associatedMedia" : {
+
+  },
+  "associatedMessageIds" : [
+
+  ],
+  "associatedMessages" : {
+    "items" : [
+
+    ]
+  },
+  "associatedStories" : {
+
+  },
+  "attributes" : [
+    {
+      "entities" : [
+
+      ]
+    },
+    {
+      "flags" : {
+        "rawValue" : 17
+      },
+      "rows" : [
+        {
+          "buttons" : [
+            {
+              "action" : "text",
+              "title" : "Reset dialog history"
+            },
+            {
+              "action" : "text",
+              "title" : "Send a long message"
+            }
+          ]
+        },
+        {
+          "buttons" : [
+            {
+              "action" : "text",
+              "title" : "✨MENU"
+            },
+            {
+              "action" : "text",
+              "title" : "⚙️AI version"
+            }
+          ]
+        },
+        {
+          "buttons" : [
+            {
+              "action" : "text",
+              "title" : "💲Balance"
+            },
+            {
+              "action" : "text",
+              "title" : "文A Lang"
+            }
+          ]
+        },
+        {
+          "buttons" : [
+            {
+              "action" : "text",
+              "title" : "In use: Regular AI mode (gpt-5-mini)"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "author" : {
+    "accessHash" : {
+      "personal" : 6081217488003208554
+    },
+    "botInfo" : {
+      "flags" : {
+        "rawValue" : 2
+      }
+    },
+    "firstName" : "UnlimAI (GPT | Claude | MidJourney)",
+    "flags" : {
+      "rawValue" : 0
+    },
+    "id" : {
+      "id" : {
+        "rawValue" : 5845796767
+      },
+      "namespace" : {
+        "rawValue" : 0
+      }
+    },
+    "photo" : [
+      {
+        "dimensions" : {
+          "height" : 80,
+          "width" : 80
+        },
+        "hasVideo" : false,
+        "immediateThumbnailData" : "",
+        "isPersonal" : false,
+        "progressiveSizes" : [
+
+        ],
+        "resource" : {
+          "datacenterId" : 2,
+          "photoId" : 5341456822822442087,
+          "sizeSpec" : "small"
+        },
+        "typeHint" : "generic"
+      },
+      {
+        "dimensions" : {
+          "height" : 640,
+          "width" : 640
+        },
+        "hasVideo" : false,
+        "immediateThumbnailData" : "",
+        "isPersonal" : false,
+        "progressiveSizes" : [
+
+        ],
+        "resource" : {
+          "datacenterId" : 2,
+          "photoId" : 5341456822822442087,
+          "sizeSpec" : "fullSize"
+        },
+        "typeHint" : "generic"
+      }
+    ],
+    "storiesHidden" : false,
+    "subscriberCount" : 1299786,
+    "username" : "chat_gpt_unlim_bot",
+    "usernames" : [
+
+    ]
+  },
+  "customTags" : [
+
+  ],
+  "flags" : {
+    "rawValue" : 84
+  },
+  "globalTags" : {
+    "rawValue" : 0
+  },
+  "id" : {
+    "id" : 152761,
+    "namespace" : 0,
+    "peerId" : {
+      "id" : {
+        "rawValue" : 5272090068
+      },
+      "namespace" : {
+        "rawValue" : 1
+      }
+    }
+  },
+  "localTags" : {
+    "rawValue" : 0
+  },
+  "media" : [
+
+  ],
+  "peers" : {
+    "items" : [
+      {
+        ".0" : {
+          "id" : {
+            "rawValue" : 5272090068
+          },
+          "namespace" : {
+            "rawValue" : 1
+          }
+        },
+        ".1" : {
+          "creationDate" : 1779407487,
+          "flags" : {
+            "rawValue" : 2
+          },
+          "id" : {
+            "id" : {
+              "rawValue" : 5272090068
+            },
+            "namespace" : {
+              "rawValue" : 1
+            }
+          },
+          "membership" : "Member",
+          "migrationReference" : {
+            "accessHash" : -7912539016199079669,
+            "peerId" : {
+              "id" : {
+                "rawValue" : 3937486164
+              },
+              "namespace" : {
+                "rawValue" : 2
+              }
+            }
+          },
+          "participantCount" : 0,
+          "photo" : [
+
+          ],
+          "role" : {
+            "creator" : {
+
+            }
+          },
+          "title" : "tNU",
+          "version" : 10
+        }
+      }
+    ]
+  },
+  "stableId" : 58150,
+  "stableVersion" : 0,
+  "tags" : {
+    "rawValue" : 0
+  },
+  "text" : "Oi! Tudo bem? 😊 \n\nSe precisar de ajuda com a configuração do bot de antes, ou se tiver qualquer outra dúvida, é só falar! Como posso te ajudar agora?",
+  "timestamp" : 1779483722
+}
