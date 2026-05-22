@@ -135,6 +135,37 @@ async def cmd_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await context.bot.send_message(chat_id=chat.id, text=text, parse_mode="HTML")
 
 
+async def log_every_update(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Diagnostic: log every incoming update so we can see what reaches the bot."""
+    try:
+        msg = update.effective_message
+        chat = update.effective_chat
+        user = update.effective_user
+        reply_to_id = msg.reply_to_message.message_id if (msg and msg.reply_to_message) else None
+        reply_to_from = (
+            msg.reply_to_message.from_user.id
+            if (msg and msg.reply_to_message and msg.reply_to_message.from_user)
+            else None
+        )
+        text_preview = ((msg.text or msg.caption) if msg else None) or ""
+        logger.info(
+            "RAW update_id=%s type=%s chat=%s(%s) from=%s(@%s,bot=%s) "
+            "reply_to=%s reply_to_from=%s text=%r",
+            update.update_id,
+            type(update).__name__ if not msg else "Message",
+            chat.id if chat else None,
+            chat.type if chat else None,
+            user.id if user else None,
+            user.username if user else None,
+            user.is_bot if user else None,
+            reply_to_id,
+            reply_to_from,
+            text_preview[:120],
+        )
+    except Exception:
+        logger.exception("log_every_update failed")
+
+
 async def on_business_connection(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Capture the business account owner's user_id so we can filter outgoing msgs."""
     bc = update.business_connection
@@ -369,6 +400,9 @@ def main() -> None:
 
     # /id works anywhere — DM, group, business chat.
     application.add_handler(CommandHandler("id", cmd_id))
+
+    # Diagnostic: log every incoming update (does not block any handler).
+    application.add_handler(TypeHandler(Update, log_every_update), group=-2)
 
     # Learn the business account owner's id from connection updates.
     # Placed in its own dispatch group so it doesn't swallow other handlers.
