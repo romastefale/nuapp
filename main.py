@@ -329,26 +329,47 @@ async def handle_group_message(
                 await msg.reply_text("❌ Por enquanto só dá pra responder com texto.")
             return
     elif sender_is_bot:
-        # Path B: Mira (or any other bot) posted in the group. Route her text
-        # to the oldest still-unanswered forward. Works whether or not she
-        # used Telegram's "reply" feature. Requires Bot-to-Bot Communication
-        # Mode enabled on our bot in BotFather (plus admin rights or Group
-        # Privacy OFF) so Telegram actually delivers her messages to us.
+        # Path B: Mira (or any other bot) posted in the group. Map to the
+        # oldest still-unanswered forward and copy her message *as-is* to
+        # the customer via copy_message — using our admin rights in the
+        # group. This preserves text formatting, emoji, mentions, media
+        # (stickers, images, audio) instead of dumping plain text.
         pending = _oldest_unanswered_forward()
         if pending is None:
             logger.info("Bot %s posted in group but no pending forward — ignoring.", from_user.username)
             return
         target_group_msg_id, entry = pending
-        text_to_send = msg.text or msg.caption
         source_label = "IA"
-        if not text_to_send:
-            logger.info("Bot %s posted without text — ignoring.", from_user.username)
-            return
         logger.info(
-            "Auto-forwarding bot %s's text for oldest pending forward %s.",
+            "Auto-copying bot %s's msg %s -> customer (forward %s).",
             from_user.username or from_user.id,
+            msg.message_id,
             target_group_msg_id,
         )
+        try:
+            await context.bot.copy_message(
+                chat_id=entry["chat_id"],
+                from_chat_id=GROUP_CHAT_ID,
+                message_id=msg.message_id,
+                business_connection_id=entry["business_connection_id"],
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("Failed to copy bot reply to customer: %s", exc)
+            return
+        entry["answered"] = True
+        _remember_forward(target_group_msg_id, entry)
+        logger.info(
+            "Delivered (copy) reply to customer chat=%s (forward %s, source=IA)",
+            entry["chat_id"],
+            target_group_msg_id,
+        )
+        try:
+            await msg.reply_text(
+                f"✅ Enviado para {entry['customer_name']} (por IA)"
+            )
+        except Exception:
+            logger.exception("Failed to post confirmation in group")
+        return
     else:
         # User wrote in the group but not as a reply to our relay — ignore.
         return
