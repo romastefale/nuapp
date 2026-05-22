@@ -7,6 +7,7 @@ the relayed message) is then sent back to the original customer through
 the business connection.
 """
 
+import asyncio
 import json
 import logging
 import os
@@ -15,11 +16,21 @@ import time
 from pathlib import Path
 from typing import Any
 
-from telegram import Update
+from telegram import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    InlineQueryResultArticle,
+    InputMediaPhoto,
+    InputMediaVideo,
+    InputTextMessageContent,
+    Update,
+)
 from telegram.ext import (
     ApplicationBuilder,
+    ChosenInlineResultHandler,
     CommandHandler,
     ContextTypes,
+    InlineQueryHandler,
     MessageHandler,
     TypeHandler,
     filters,
@@ -67,17 +78,18 @@ def _parse_int(value: str | None) -> int | None:
 # bot can run without it and the /id command helps you discover the value.
 GROUP_CHAT_ID: int | None = _parse_int(os.environ.get("GROUP_CHAT_ID"))
 
+# Owner-only inline mode. Inline queries from any other user return an
+# empty result set, so the bot stays silent for non-owners. Both values
+# are env-overridable.
+OWNER_USER_ID: int = int(os.environ.get("OWNER_USER_ID", "8505890439"))
+OWNER_USERNAME: str = os.environ.get("OWNER_USERNAME", "tigrao")
+
 # Prefix that wakes the Mira AI bot in the group. The relay message starts
 # with this so Mira automatically answers with a suggested reply. The bot
 # then forwards Mira's reply back to the customer automatically.
 MIRA_PROMPT = os.environ.get(
     "MIRA_PROMPT",
-    "Mira, responda essa mensagem com apenas 1 frase curta em português, "
-    "natural e direta, mantendo o mesmo tom de quem escreveu. Sem "
-    "formalidade, exageros ou resposta robótica. Não peça desculpas, "
-    "não fale sobre demora. Exemplos: \"oi\", \"tranquilo\", \"manda aí\", "
-    "\"tá certo\". Escreva apenas a resposta final, sem aspas e sem "
-    "explicação.",
+    "Mira, responda essa mensagem usando apenas 1 frase curta, em português, com linguagem natural, espontânea e parecendo escrita por uma pessoa real. Mantenha o tom emocional e o ritmo de quem enviou a mensagem, adaptando a resposta ao contexto. Pode usar leve sarcasmo ou ironia quando combinar com a situação, mas de forma sutil, educada e natural; em contextos apropriados, também pode soar carinhosa ou fofa. Evite formalidade, frases prontas, exageros, floreios e qualquer tom robótico ou artificial.\n\nRegras obrigatórias:\n\n* Nunca peça desculpas.\n* Nunca mencione demora, tempo sem responder ou ausência.\n* Nunca explique a resposta.\n* Nunca faça introduções ou encerramentos desnecessários.\n* Nunca use emojis em nenhuma hipótese.\n* Evite repetir palavras da mensagem original sem necessidade.\n* Prefira respostas curtas do dia a dia, como alguém conversando normalmente.\n* Escreva apenas a resposta final, sem aspas, sem comentários e sem texto extra.\n\nExemplos de estilo: \"oi\", \"tranquilo\", \"manda aí\", \"tá certo\", \"sei não hein\", \"aí você me complica\", \"faz sentido\", \"pode ser\".",
 )
 
 # ---------------------------------------------------------------------------
@@ -224,6 +236,175 @@ async def _resolve_owner_id(
     return None
 
 
+# ---------------------------------------------------------------------------
+# Media helpers (business messages)
+# ---------------------------------------------------------------------------
+_ALBUM_BUFFER: dict[str, dict[str, Any]] = {}
+_ALBUM_LOCK = asyncio.Lock()
+ALBUM_DEBOUNCE_SECONDS = 1.2
+
+
+def _fmt_duration(seconds: int | None) -> str:
+    if not seconds or seconds <= 0:
+        return ""
+    if seconds < 60:
+        return f"{int(seconds)}s"
+    m, s = divmod(int(seconds), 60)
+    return f"{m}:{s:02d}"
+
+
+def _fmt_size(num: int | None) -> str:
+    if not num or num <= 0:
+        return ""
+    val = float(num)
+    for unit in ("B", "KB", "MB", "GB"):
+        if val < 1024:
+            return f"{val:.0f}{unit}" if unit == "B" else f"{val:.1f}{unit}"
+        val /= 1024
+    return f"{val:.1f}TB"
+
+
+def _describe_media(msg) -> str | None:
+    """PT-BR short description of any media on the business_message so Mira
+    has textual context even without vision. Returns None for text-only."""
+    if msg.photo:
+        p = msg.photo[-1]
+        return f"foto {p.width}x{p.height}"
+    if msg.video:
+        dur = _fmt_duration(msg.video.duration)
+        dim = f"{msg.video.width}x{msg.video.height}"
+        return " ".join(x for x in ("vídeo", dur, dim) if x)
+    if msg.animation:
+        return " ".join(x for x in ("GIF", _fmt_duration(msg.animation.duration)) if x)
+    if msg.video_note:
+        return " ".join(x for x in ("vídeo curto", _fmt_duration(msg.video_note.duration)) if x)
+    if msg.voice:
+        return " ".join(x for x in ("mensagem de voz", _fmt_duration(msg.voice.duration)) if x)
+    if msg.audio:
+        a = msg.audio
+        bits = ["áudio"]
+        if a.title:
+            bits.append(f"'{a.title}'")
+        if a.performer:
+            bits.append(f"— {a.performer}")
+        d = _fmt_duration(a.duration)
+        if d:
+            bits.append(f"· {d}")
+        return " ".join(bits)
+    if msg.sticker:
+        s = msg.sticker
+        bits = ["sticker"]
+        if s.emoji:
+            bits.append(s.emoji)
+        if s.set_name:
+            bits.append(f"(set {s.set_name})")
+        return " ".join(bits)
+    if msg.document:
+        d = msg.document
+        bits = ["documento"]
+        if d.file_name:
+            bits.append(f"'{d.file_name}'")
+        meta = []
+        if d.mime_type:
+            meta.append(d.mime_type)
+        sz = _fmt_size(d.file_size)
+        if sz:
+            meta.append(sz)
+        if meta:
+            bits.append(f"({', '.join(meta)})")
+        return " ".join(bits)
+    return None
+
+
+async def _send_media_to_group(context: ContextTypes.DEFAULT_TYPE, msg) -> int | None:
+    """Reencaminha a mídia ao GROUP_CHAT_ID via file_id (sem download).
+    Retorna o message_id da mídia reenviada, ou None se não havia mídia."""
+    bot = context.bot
+    if msg.photo:
+        sent = await bot.send_photo(GROUP_CHAT_ID, msg.photo[-1].file_id)
+    elif msg.video:
+        sent = await bot.send_video(GROUP_CHAT_ID, msg.video.file_id)
+    elif msg.animation:
+        sent = await bot.send_animation(GROUP_CHAT_ID, msg.animation.file_id)
+    elif msg.video_note:
+        sent = await bot.send_video_note(GROUP_CHAT_ID, msg.video_note.file_id)
+    elif msg.voice:
+        sent = await bot.send_voice(GROUP_CHAT_ID, msg.voice.file_id)
+    elif msg.audio:
+        sent = await bot.send_audio(GROUP_CHAT_ID, msg.audio.file_id)
+    elif msg.sticker:
+        sent = await bot.send_sticker(GROUP_CHAT_ID, msg.sticker.file_id)
+    elif msg.document:
+        sent = await bot.send_document(GROUP_CHAT_ID, msg.document.file_id)
+    else:
+        return None
+    return sent.message_id
+
+
+async def _flush_album(media_group_id: str, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Debounce álbum: aguarda ALBUM_DEBOUNCE_SECONDS de inatividade,
+    então envia tudo com send_media_group + 1 relay textual + prompt Mira."""
+    try:
+        await asyncio.sleep(ALBUM_DEBOUNCE_SECONDS)
+    except asyncio.CancelledError:
+        return
+    async with _ALBUM_LOCK:
+        bundle = _ALBUM_BUFFER.pop(media_group_id, None)
+    if not bundle or not bundle["items"]:
+        return
+    items = bundle["items"]
+    input_media: list = []
+    for i, m in enumerate(items):
+        cap = (m.caption or None) if i == 0 else None
+        if m.photo:
+            input_media.append(InputMediaPhoto(media=m.photo[-1].file_id, caption=cap))
+        elif m.video:
+            input_media.append(InputMediaVideo(media=m.video.file_id, caption=cap))
+    anchor_id: int | None = None
+    if input_media:
+        try:
+            sent_group = await context.bot.send_media_group(
+                chat_id=GROUP_CHAT_ID, media=input_media
+            )
+            anchor_id = sent_group[0].message_id
+        except Exception:
+            logger.exception("send_media_group failed; relaying text-only")
+    n_photos = sum(1 for m in items if m.photo)
+    n_videos = sum(1 for m in items if m.video)
+    chunks = []
+    if n_photos:
+        chunks.append(f"{n_photos} foto" + ("s" if n_photos > 1 else ""))
+    if n_videos:
+        chunks.append(f"{n_videos} vídeo" + ("s" if n_videos > 1 else ""))
+    desc = "álbum com " + " e ".join(chunks) if chunks else "álbum"
+    caption = items[0].caption or items[0].text
+    body = f"[{desc}] {caption}" if caption else f"(enviou {desc})"
+    sender_name = bundle["sender_name"]
+    sender_handle = bundle["sender_handle"]
+    relay_text = (
+        f"📩 <b>{_html_escape(sender_name)}</b>{_html_escape(sender_handle)}:\n"
+        f"<blockquote>{_html_escape(body)}</blockquote>\n"
+        f"{MIRA_PROMPT}"
+    )
+    send_kwargs: dict[str, Any] = {
+        "chat_id": GROUP_CHAT_ID,
+        "text": relay_text,
+        "parse_mode": "HTML",
+    }
+    if anchor_id is not None:
+        send_kwargs["reply_to_message_id"] = anchor_id
+    try:
+        sent = await context.bot.send_message(**send_kwargs)
+    except Exception:
+        logger.exception("Failed to send album relay text")
+        return
+    _remember_forward(sent.message_id, bundle["forward_payload"])
+    logger.info(
+        "Relayed album mgid=%s items=%d -> group msg %s",
+        media_group_id, len(items), sent.message_id,
+    )
+
+
 async def handle_business_message(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> None:
@@ -255,43 +436,85 @@ async def handle_business_message(
 
     sender_name = sender.full_name
     sender_handle = f" (@{sender.username})" if sender.username else ""
-    body = msg.text or msg.caption or "(mensagem sem texto — mídia recebida)"
+    forward_payload = {
+        "chat_id": msg.chat_id,
+        "business_connection_id": business_connection_id,
+        "customer_name": sender_name,
+        "customer_user_id": sender.id,
+    }
 
-    # Format must match the version that worked empirically (see JSON dumps
-    # 151252 / 151258): header first, customer message in <blockquote>,
-    # Mira prompt LAST. Putting the prompt at the end made Mira respond
-    # reliably; moving it to the top broke the flow. All user-provided
-    # strings are HTML-escaped so a `<` / `&` in a name/handle/body
-    # never breaks parse_mode=HTML on Telegram's side.
+    # Álbum: agrega itens com mesmo media_group_id num único envio
+    # (send_media_group) + 1 prompt para a Mira. Debounce curto evita
+    # esperar uploads parciais.
+    if msg.media_group_id:
+        async with _ALBUM_LOCK:
+            bundle = _ALBUM_BUFFER.get(msg.media_group_id)
+            if bundle is None:
+                bundle = {
+                    "items": [],
+                    "sender_name": sender_name,
+                    "sender_handle": sender_handle,
+                    "forward_payload": forward_payload,
+                    "task": None,
+                }
+                _ALBUM_BUFFER[msg.media_group_id] = bundle
+            bundle["items"].append(msg)
+            if bundle["task"]:
+                bundle["task"].cancel()
+            bundle["task"] = asyncio.create_task(
+                _flush_album(msg.media_group_id, context)
+            )
+        return
+
+    # Mensagem única: reenvia mídia (se houver) e manda o relay textual
+    # como reply à mídia, para a Mira ver tudo no mesmo contexto.
+    media_msg_id: int | None = None
+    desc = _describe_media(msg)
+    if desc:
+        try:
+            media_msg_id = await _send_media_to_group(context, msg)
+        except Exception:
+            logger.exception(
+                "Failed to forward media to group; falling back to text-only."
+            )
+
+    caption = msg.text or msg.caption
+    if caption and desc:
+        body = f"[{desc}] {caption}"
+    elif desc:
+        body = f"(enviou {desc})"
+    else:
+        body = caption or "(sem texto)"
+
+    # Header first, customer message in <blockquote>, Mira prompt LAST.
+    # All user-provided strings are HTML-escaped so `<` / `&` in a
+    # name/handle/body never breaks parse_mode=HTML.
     relay_text = (
         f"📩 <b>{_html_escape(sender_name)}</b>{_html_escape(sender_handle)}:\n"
         f"<blockquote>{_html_escape(body)}</blockquote>\n"
         f"{MIRA_PROMPT}"
     )
 
+    send_kwargs: dict[str, Any] = {
+        "chat_id": GROUP_CHAT_ID,
+        "text": relay_text,
+        "parse_mode": "HTML",
+    }
+    if media_msg_id is not None:
+        send_kwargs["reply_to_message_id"] = media_msg_id
+
     try:
-        sent = await context.bot.send_message(
-            chat_id=GROUP_CHAT_ID,
-            text=relay_text,
-            parse_mode="HTML",
-        )
+        sent = await context.bot.send_message(**send_kwargs)
     except Exception:
         logger.exception("Failed to relay business message to group")
         return
 
-    _remember_forward(
-        sent.message_id,
-        {
-            "chat_id": msg.chat_id,
-            "business_connection_id": business_connection_id,
-            "customer_name": sender_name,
-            "customer_user_id": sender.id,
-        },
-    )
+    _remember_forward(sent.message_id, forward_payload)
     logger.info(
-        "Relayed business msg from user=%s -> group msg %s",
+        "Relayed business msg from user=%s -> group msg %s (media=%s)",
         sender.id,
         sent.message_id,
+        desc or "none",
     )
 
 
@@ -397,6 +620,40 @@ async def handle_group_message(
             msg.message_id,
             target_group_msg_id,
         )
+        if entry.get("target_type") == "inline_search":
+            # Inline !srch flow: edit the inline message in-place with
+            # Mira's answer instead of sending anything to a customer.
+            reply_text = msg.text or msg.caption
+            if not reply_text:
+                logger.info(
+                    "Mira replied to !srch %s without text — ignoring.",
+                    target_group_msg_id,
+                )
+                return
+            try:
+                await context.bot.edit_message_text(
+                    inline_message_id=entry["inline_message_id"],
+                    text=reply_text,
+                    reply_markup=None,
+                )
+            except Exception:
+                logger.exception(
+                    "Failed to edit inline message %s with Mira's answer",
+                    entry["inline_message_id"],
+                )
+                return
+            entry["answered"] = True
+            _remember_forward(target_group_msg_id, entry)
+            logger.info(
+                "Updated inline !srch message %s with Mira's reply (forward %s).",
+                entry["inline_message_id"], target_group_msg_id,
+            )
+            try:
+                await msg.reply_text("✅ Resposta entregue ao inline")
+            except Exception:
+                logger.exception("Failed to post inline-confirmation in group")
+            return
+
         try:
             await context.bot.copy_message(
                 chat_id=entry["chat_id"],
@@ -426,6 +683,38 @@ async def handle_group_message(
         return
 
     assert entry is not None and target_group_msg_id is not None and text_to_send
+
+    if entry.get("target_type") == "inline_search":
+        # Path A for !srch: Mira (or the owner) replied to our relay with
+        # text. Edit the inline message in place instead of trying to
+        # forward to a non-existent customer chat.
+        try:
+            await context.bot.edit_message_text(
+                inline_message_id=entry["inline_message_id"],
+                text=text_to_send,
+                reply_markup=None,
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.exception(
+                "Failed to edit inline message %s: %s",
+                entry["inline_message_id"], exc,
+            )
+            try:
+                await msg.reply_text(f"❌ Falha ao atualizar inline: {exc}")
+            except Exception:
+                logger.exception("Failed to post inline-error confirmation")
+            return
+        entry["answered"] = True
+        _remember_forward(target_group_msg_id, entry)
+        logger.info(
+            "Updated inline !srch message %s with reply (forward %s, source=%s).",
+            entry["inline_message_id"], target_group_msg_id, source_label,
+        )
+        try:
+            await msg.reply_text("✅ Resposta entregue ao inline")
+        except Exception:
+            logger.exception("Failed to post inline-confirmation in group")
+        return
 
     try:
         await context.bot.send_message(
@@ -464,6 +753,208 @@ def _html_escape(text: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Inline mode (owner-only) — prefix-based commands
+# ---------------------------------------------------------------------------
+# Owner-only inline mode. Two commands:
+#
+#   !save <frase>   →  Posts in the current chat:
+#                       "✅ @nuapp salvou com sucesso o seu pedido: '<frase>'"
+#                      And relays to the tNU group:
+#                       "@mira, o @tigrao gostaria que <frase>"
+#
+#   !srch <termo>   →  Posts in the current chat:
+#                       "⏳ nuAPP pesquisando: '<termo>'..."
+#                      And relays to the tNU group:
+#                       "@mira, pesquise sobre \"<termo>\""
+#                      When Mira replies (Telegram-reply) to that relay
+#                      message in the tNU group, we EDIT the inline
+#                      message in place with her answer.
+#
+# DEFAULT BEHAVIOR: if no recognised prefix is present, the entire query
+# is treated as !srch — so `@tNUappbot quem inventou o iglu?` works as a
+# search. Empty queries and non-owner queries return no results.
+# User-facing strings never mention Mira (branded as "nuAPP" instead).
+
+_INLINE_MAX_QUERY_LEN = 256
+_CMD_SAVE = "!save"
+_CMD_SRCH = "!srch"
+
+
+def _parse_inline_command(raw: str) -> tuple[str | None, str]:
+    """Return (cmd, body) — cmd is "!save", "!srch", or None.
+
+    - Empty input → (None, "").
+    - First token is "!save" or "!srch" → that command + the rest as body.
+    - Anything else → defaults to "!srch" with the FULL text as body, so
+      typing `@tNUappbot quem inventou o iglu?` is treated as a search.
+
+    Body is trimmed and truncated to the Telegram inline-query limit.
+    """
+    text = (raw or "").strip()
+    if not text:
+        return None, ""
+    head, _, rest = text.partition(" ")
+    cmd = head.lower()
+    if cmd in (_CMD_SAVE, _CMD_SRCH):
+        body = rest.strip()
+    else:
+        cmd = _CMD_SRCH
+        body = text  # entire query — no prefix to strip
+    if len(body) > _INLINE_MAX_QUERY_LEN:
+        body = body[:_INLINE_MAX_QUERY_LEN]
+    return cmd, body
+
+
+def _build_save_confirmation(body: str) -> str:
+    return f"✅ @nuapp salvou com sucesso o seu pedido: '{body}'"
+
+
+def _build_save_group_request(body: str) -> str:
+    return f"@mira, o @{OWNER_USERNAME} gostaria que {body}"
+
+
+def _build_srch_placeholder(body: str) -> str:
+    return f"⏳ nuAPP pesquisando: '{body}'..."
+
+
+def _build_srch_group_request(body: str) -> str:
+    return f"@mira, pesquise sobre \"{body}\""
+
+
+# Tiny no-op inline keyboard. Telegram only delivers `inline_message_id`
+# in chosen_inline_result if the result carries a reply_markup, and we
+# need that id to edit the !srch message later when Mira answers.
+def _inline_pending_markup() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [[InlineKeyboardButton(text="⏳ aguardando nuAPP", callback_data="noop")]]
+    )
+
+
+async def handle_inline_query(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> None:
+    """Owner-only inline mode dispatcher. Recognises the !save and !srch
+    prefixes; everything else returns no results."""
+    iq = update.inline_query
+    if iq is None or iq.from_user is None:
+        return
+    if iq.from_user.id != OWNER_USER_ID:
+        try:
+            await iq.answer(results=[], cache_time=1, is_personal=True)
+        except Exception:
+            logger.exception("Failed to send empty inline answer to non-owner")
+        return
+
+    cmd, body = _parse_inline_command(iq.query)
+    if cmd is None or not body:
+        # No recognised prefix yet OR empty body — stay silent.
+        try:
+            await iq.answer(results=[], cache_time=1, is_personal=True)
+        except Exception:
+            logger.exception("Failed to send empty inline answer")
+        return
+
+    if cmd == _CMD_SAVE:
+        result = InlineQueryResultArticle(
+            id=f"save:{iq.id}",
+            title="Salvar pedido no tNU",
+            description=body[:120],
+            input_message_content=InputTextMessageContent(
+                message_text=_build_save_confirmation(body),
+            ),
+        )
+    else:  # _CMD_SRCH
+        result = InlineQueryResultArticle(
+            id=f"srch:{iq.id}",
+            title="Pesquise com nuAPP",
+            description=body[:120],
+            input_message_content=InputTextMessageContent(
+                message_text=_build_srch_placeholder(body),
+            ),
+            reply_markup=_inline_pending_markup(),
+        )
+
+    try:
+        await iq.answer(results=[result], cache_time=0, is_personal=True)
+    except Exception:
+        logger.exception("Failed to answer inline query")
+
+
+async def handle_chosen_inline_result(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> None:
+    """Owner actually picked the article — perform the side-effect:
+
+    - !save: send a one-shot request line to the tNU group.
+    - !srch: send a search request to the tNU group and remember the
+      mapping (group_msg_id -> inline_message_id) so we can edit the
+      inline message when Mira replies.
+    """
+    cir = update.chosen_inline_result
+    if cir is None or cir.from_user is None:
+        return
+    if cir.from_user.id != OWNER_USER_ID:
+        logger.warning(
+            "Ignored chosen_inline_result from non-owner user_id=%s",
+            cir.from_user.id,
+        )
+        return
+    if GROUP_CHAT_ID is None:
+        logger.warning(
+            "Inline pick by owner but GROUP_CHAT_ID not set — cannot relay."
+        )
+        return
+
+    cmd, body = _parse_inline_command(cir.query)
+    if cmd is None or not body:
+        return
+
+    if cmd == _CMD_SAVE:
+        text = _build_save_group_request(body)
+        try:
+            await context.bot.send_message(chat_id=GROUP_CHAT_ID, text=text)
+        except Exception:
+            logger.exception(
+                "Failed to relay !save to tNU chat_id=%s", GROUP_CHAT_ID
+            )
+            return
+        logger.info("Relayed !save to tNU: %r", body[:80])
+        return
+
+    # !srch — need cir.inline_message_id to be able to edit it later.
+    inline_message_id = cir.inline_message_id
+    if not inline_message_id:
+        logger.warning(
+            "!srch picked but Telegram did not return inline_message_id "
+            "(is the result missing a reply_markup?) — cannot edit later."
+        )
+        return
+    text = _build_srch_group_request(body)
+    try:
+        sent = await context.bot.send_message(chat_id=GROUP_CHAT_ID, text=text)
+    except Exception:
+        logger.exception(
+            "Failed to relay !srch to tNU chat_id=%s", GROUP_CHAT_ID
+        )
+        return
+    _remember_forward(
+        sent.message_id,
+        {
+            "target_type": "inline_search",
+            "inline_message_id": inline_message_id,
+            "query": body,
+            "answered": False,
+            "created_at": int(time.time()),
+        },
+    )
+    logger.info(
+        "Relayed !srch to tNU msg %s (inline_message_id=%s): %r",
+        sent.message_id, inline_message_id, body[:80],
+    )
+
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 def main() -> None:
@@ -471,6 +962,13 @@ def main() -> None:
 
     # /id works anywhere — DM, group, business chat.
     application.add_handler(CommandHandler("id", cmd_id))
+
+    # Inline mode (owner-only). Owner types `@tNUappbot <frase>`
+    # anywhere; we relay the request into the tNU group when picked.
+    application.add_handler(InlineQueryHandler(handle_inline_query))
+    application.add_handler(
+        ChosenInlineResultHandler(handle_chosen_inline_result)
+    )
 
     # Diagnostic: log every incoming update (does not block any handler).
     application.add_handler(TypeHandler(Update, log_every_update), group=-2)
@@ -516,7 +1014,9 @@ def main() -> None:
         allowed_updates=[
             Update.BUSINESS_CONNECTION,
             Update.BUSINESS_MESSAGE,
+            Update.CHOSEN_INLINE_RESULT,
             Update.EDITED_BUSINESS_MESSAGE,
+            Update.INLINE_QUERY,
             Update.MESSAGE,
         ]
     )
@@ -524,3 +1024,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
