@@ -1,0 +1,408 @@
+{
+  "associatedMedia" : {
+
+  },
+  "associatedMessageIds" : [
+    {
+      "id" : 151274,
+      "namespace" : 0,
+      "peerId" : {
+        "id" : {
+          "rawValue" : 5272090068
+        },
+        "namespace" : {
+          "rawValue" : 1
+        }
+      }
+    }
+  ],
+  "associatedMessages" : {
+    "items" : [
+      {
+        ".0" : {
+          "id" : 151274,
+          "namespace" : 0,
+          "peerId" : {
+            "id" : {
+              "rawValue" : 5272090068
+            },
+            "namespace" : {
+              "rawValue" : 1
+            }
+          }
+        },
+        ".1" : {
+          "associatedMedia" : {
+
+          },
+          "associatedMessageIds" : [
+            {
+              "id" : 151273,
+              "namespace" : 0,
+              "peerId" : {
+                "id" : {
+                  "rawValue" : 5272090068
+                },
+                "namespace" : {
+                  "rawValue" : 1
+                }
+              }
+            }
+          ],
+          "associatedMessages" : {
+            "items" : [
+
+            ]
+          },
+          "associatedStories" : {
+
+          },
+          "attributes" : [
+            {
+              "isQuote" : false,
+              "messageId" : {
+                "id" : 151273,
+                "namespace" : 0,
+                "peerId" : {
+                  "id" : {
+                    "rawValue" : 5272090068
+                  },
+                  "namespace" : {
+                    "rawValue" : 1
+                  }
+                }
+              }
+            },
+            {
+              "entities" : [
+
+              ]
+            }
+          ],
+          "author" : {
+            "accessHash" : {
+              "personal" : 3915909986098895838
+            },
+            "botInfo" : {
+              "flags" : {
+                "rawValue" : 2499
+              },
+              "inlinePlaceholder" : "Ask me anything"
+            },
+            "firstName" : "Mira",
+            "flags" : {
+              "rawValue" : 1
+            },
+            "id" : {
+              "id" : {
+                "rawValue" : 8377231659
+              },
+              "namespace" : {
+                "rawValue" : 0
+              }
+            },
+            "photo" : [
+              {
+                "dimensions" : {
+                  "height" : 80,
+                  "width" : 80
+                },
+                "hasVideo" : false,
+                "immediateThumbnailData" : "",
+                "isPersonal" : false,
+                "progressiveSizes" : [
+
+                ],
+                "resource" : {
+                  "datacenterId" : 2,
+                  "photoId" : 5416140084987236063,
+                  "sizeSpec" : "small"
+                },
+                "typeHint" : "generic"
+              },
+              {
+                "dimensions" : {
+                  "height" : 640,
+                  "width" : 640
+                },
+                "hasVideo" : false,
+                "immediateThumbnailData" : "",
+                "isPersonal" : false,
+                "progressiveSizes" : [
+
+                ],
+                "resource" : {
+                  "datacenterId" : 2,
+                  "photoId" : 5416140084987236063,
+                  "sizeSpec" : "fullSize"
+                },
+                "typeHint" : "generic"
+              }
+            ],
+            "storiesHidden" : false,
+            "subscriberCount" : 864697,
+            "usernames" : [
+              {
+                "flags" : {
+                  "rawValue" : 2
+                },
+                "username" : "mira"
+              }
+            ]
+          },
+          "customTags" : [
+
+          ],
+          "flags" : {
+            "rawValue" : 68
+          },
+          "globalTags" : {
+            "rawValue" : 0
+          },
+          "id" : {
+            "id" : 151274,
+            "namespace" : 0,
+            "peerId" : {
+              "id" : {
+                "rawValue" : 5272090068
+              },
+              "namespace" : {
+                "rawValue" : 1
+              }
+            }
+          },
+          "localTags" : {
+            "rawValue" : 0
+          },
+          "media" : [
+
+          ],
+          "peers" : {
+            "items" : [
+              {
+                ".0" : {
+                  "id" : {
+                    "rawValue" : 5272090068
+                  },
+                  "namespace" : {
+                    "rawValue" : 1
+                  }
+                },
+                ".1" : {
+                  "creationDate" : 1779407487,
+                  "defaultBannedRights" : {
+                    "flags" : {
+                      "rawValue" : 67108864
+                    },
+                    "untilDate" : 2147483647
+                  },
+                  "flags" : {
+                    "rawValue" : 0
+                  },
+                  "id" : {
+                    "id" : {
+                      "rawValue" : 5272090068
+                    },
+                    "namespace" : {
+                      "rawValue" : 1
+                    }
+                  },
+                  "membership" : "Member",
+                  "participantCount" : 3,
+                  "photo" : [
+
+                  ],
+                  "role" : {
+                    "creator" : {
+
+                    }
+                  },
+                  "title" : "tNU",
+                  "version" : 3
+                }
+              }
+            ]
+          },
+          "stableId" : 50834,
+          "stableVersion" : 0,
+          "tags" : {
+            "rawValue" : 0
+          },
+          "text" : "não sei, tenta de novo?",
+          "timestamp" : 1779408333
+        }
+      }
+    ]
+  },
+  "associatedStories" : {
+
+  },
+  "attributes" : [
+    {
+      "isQuote" : false,
+      "messageId" : {
+        "id" : 151274,
+        "namespace" : 0,
+        "peerId" : {
+          "id" : {
+            "rawValue" : 5272090068
+          },
+          "namespace" : {
+            "rawValue" : 1
+          }
+        }
+      }
+    },
+    {
+      "entities" : [
+
+      ]
+    }
+  ],
+  "author" : {
+    "accessHash" : {
+      "personal" : 2802019064482508376
+    },
+    "botInfo" : {
+      "flags" : {
+        "rawValue" : 3427
+      },
+      "inlinePlaceholder" : "…."
+    },
+    "firstName" : "NUapp",
+    "flags" : {
+      "rawValue" : 0
+    },
+    "id" : {
+      "id" : {
+        "rawValue" : 8760891933
+      },
+      "namespace" : {
+        "rawValue" : 0
+      }
+    },
+    "photo" : [
+      {
+        "dimensions" : {
+          "height" : 80,
+          "width" : 80
+        },
+        "hasVideo" : false,
+        "immediateThumbnailData" : "",
+        "isPersonal" : false,
+        "progressiveSizes" : [
+
+        ],
+        "resource" : {
+          "datacenterId" : 1,
+          "photoId" : 4934194073761942588,
+          "sizeSpec" : "small"
+        },
+        "typeHint" : "generic"
+      },
+      {
+        "dimensions" : {
+          "height" : 640,
+          "width" : 640
+        },
+        "hasVideo" : false,
+        "immediateThumbnailData" : "",
+        "isPersonal" : false,
+        "progressiveSizes" : [
+
+        ],
+        "resource" : {
+          "datacenterId" : 1,
+          "photoId" : 4934194073761942588,
+          "sizeSpec" : "fullSize"
+        },
+        "typeHint" : "generic"
+      }
+    ],
+    "storiesHidden" : false,
+    "username" : "tNUappbot",
+    "usernames" : [
+
+    ]
+  },
+  "customTags" : [
+
+  ],
+  "flags" : {
+    "rawValue" : 68
+  },
+  "globalTags" : {
+    "rawValue" : 0
+  },
+  "id" : {
+    "id" : 151276,
+    "namespace" : 0,
+    "peerId" : {
+      "id" : {
+        "rawValue" : 5272090068
+      },
+      "namespace" : {
+        "rawValue" : 1
+      }
+    }
+  },
+  "localTags" : {
+    "rawValue" : 0
+  },
+  "media" : [
+
+  ],
+  "peers" : {
+    "items" : [
+      {
+        ".0" : {
+          "id" : {
+            "rawValue" : 5272090068
+          },
+          "namespace" : {
+            "rawValue" : 1
+          }
+        },
+        ".1" : {
+          "creationDate" : 1779407487,
+          "defaultBannedRights" : {
+            "flags" : {
+              "rawValue" : 67108864
+            },
+            "untilDate" : 2147483647
+          },
+          "flags" : {
+            "rawValue" : 0
+          },
+          "id" : {
+            "id" : {
+              "rawValue" : 5272090068
+            },
+            "namespace" : {
+              "rawValue" : 1
+            }
+          },
+          "membership" : "Member",
+          "participantCount" : 3,
+          "photo" : [
+
+          ],
+          "role" : {
+            "creator" : {
+
+            }
+          },
+          "title" : "tNU",
+          "version" : 3
+        }
+      }
+    ]
+  },
+  "stableId" : 50835,
+  "stableVersion" : 0,
+  "tags" : {
+    "rawValue" : 0
+  },
+  "text" : "✅ Enviado para ℒ (por IA)",
+  "timestamp" : 1779408334
+}

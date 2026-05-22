@@ -323,7 +323,7 @@ async def handle_group_message(
         target_group_msg_id = reply_to.message_id
         entry = candidate
         text_to_send = msg.text or msg.caption
-        source_label = f"IA ({from_user.username or 'bot'})" if sender_is_bot else "você"
+        source_label = "IA" if sender_is_bot else "você"
         if not text_to_send:
             if not sender_is_bot:
                 await msg.reply_text("❌ Por enquanto só dá pra responder com texto.")
@@ -340,7 +340,7 @@ async def handle_group_message(
             return
         target_group_msg_id, entry = pending
         text_to_send = msg.text or msg.caption
-        source_label = f"IA ({from_user.username or 'bot'})"
+        source_label = "IA"
         if not text_to_send:
             logger.info("Bot %s posted without text — ignoring.", from_user.username)
             return
