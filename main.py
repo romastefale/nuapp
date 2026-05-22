@@ -168,10 +168,13 @@ async def handle_business_message(
     sender_handle = f" (@{sender.username})" if sender.username else ""
     body = msg.text or msg.caption or "(mensagem sem texto — mídia recebida)"
 
+    # IMPORTANT: the AI trigger ("Mira, …") MUST be the first thing in the
+    # message — the AI bot in the group only fires when its name appears at
+    # the very beginning. Customer context goes after.
     relay_text = (
-        f"📩 <b>{sender_name}</b>{sender_handle}:\n"
-        f"<blockquote>{_html_escape(body)}</blockquote>\n"
-        f"{MIRA_PROMPT}"
+        f"{MIRA_PROMPT}\n\n"
+        f"📩 De <b>{sender_name}</b>{sender_handle}:\n"
+        f"<blockquote>{_html_escape(body)}</blockquote>"
     )
 
     try:
