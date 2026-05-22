@@ -60,11 +60,16 @@ def _parse_int(value: str | None) -> int | None:
 GROUP_CHAT_ID: int | None = _parse_int(os.environ.get("GROUP_CHAT_ID"))
 
 # Prefix that wakes the Mira AI bot in the group. The relay message starts
-# with this so Mira automatically answers with a suggested reply.
+# with this so Mira automatically answers with a suggested reply. The bot
+# then forwards Mira's reply back to the customer automatically.
 MIRA_PROMPT = os.environ.get(
     "MIRA_PROMPT",
-    "Mira, sugira uma resposta breve, natural e em português para a "
-    "mensagem acima, mantendo o tom da pessoa.",
+    "Mira, responda essa mensagem em até 1 frase curta, casual e neutra, "
+    "em português, no mesmo tom de quem escreveu. Não peça desculpas, "
+    "não diga que demorou, não use saudações longas, não comente o "
+    "assunto antigo. Exemplos do estilo desejado: \"oi\", \"oi, tudo bem?\", "
+    "\"tá bom\", \"manda aí\". Escreva apenas a resposta final, sem aspas "
+    "e sem explicação.",
 )
 
 # ---------------------------------------------------------------------------
@@ -198,14 +203,18 @@ async def handle_business_message(
 async def handle_group_reply(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> None:
-    """If the user replies (in the group) to a relayed msg, send it back to the customer."""
+    """Route replies inside the group back to the customer.
+
+    Accepts BOTH Mira's automatic suggestion (a bot reply to the relayed
+    message) and the user's own manual reply. First one wins per forward.
+    """
     msg = update.message
     if msg is None or msg.from_user is None:
         return
-    # Ignore bots (including Mira and ourselves).
-    if msg.from_user.is_bot:
-        return
     if GROUP_CHAT_ID is None or msg.chat_id != GROUP_CHAT_ID:
+        return
+    # Never echo our own bot's messages.
+    if msg.from_user.id == context.bot.id:
         return
     reply_to = msg.reply_to_message
     if reply_to is None:
@@ -213,10 +222,17 @@ async def handle_group_reply(
     entry = _lookup_forward(reply_to.message_id)
     if entry is None:
         return
+    if entry.get("answered"):
+        # Already responded to this customer message; ignore extras.
+        return
+
     text = msg.text or msg.caption
     if not text:
-        await msg.reply_text("❌ Por enquanto só dá pra responder com texto.")
+        if not msg.from_user.is_bot:
+            await msg.reply_text("❌ Por enquanto só dá pra responder com texto.")
         return
+
+    source_is_mira = msg.from_user.is_bot
 
     try:
         await context.bot.send_message(
@@ -226,10 +242,20 @@ async def handle_group_reply(
         )
     except Exception as exc:  # noqa: BLE001
         logger.exception("Failed to deliver reply to customer: %s", exc)
-        await msg.reply_text(f"❌ Falha ao enviar: {exc}")
+        if not source_is_mira:
+            await msg.reply_text(f"❌ Falha ao enviar: {exc}")
         return
 
-    await msg.reply_text(f"✅ Enviado para {entry['customer_name']}")
+    entry["answered"] = True
+    _remember_forward(reply_to.message_id, entry)
+
+    source = "Mira" if source_is_mira else "você"
+    try:
+        await msg.reply_text(
+            f"✅ Enviado para {entry['customer_name']} (por {source})"
+        )
+    except Exception:
+        logger.exception("Failed to post confirmation in group")
 
 
 def _html_escape(text: str) -> str:
