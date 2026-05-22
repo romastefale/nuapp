@@ -16,6 +16,8 @@ from pathlib import Path
 from typing import Any
 
 from telegram import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
     InlineQueryResultArticle,
     InputTextMessageContent,
     Update,
@@ -409,6 +411,40 @@ async def handle_group_message(
             msg.message_id,
             target_group_msg_id,
         )
+        if entry.get("target_type") == "inline_search":
+            # Inline !srch flow: edit the inline message in-place with
+            # Mira's answer instead of sending anything to a customer.
+            reply_text = msg.text or msg.caption
+            if not reply_text:
+                logger.info(
+                    "Mira replied to !srch %s without text — ignoring.",
+                    target_group_msg_id,
+                )
+                return
+            try:
+                await context.bot.edit_message_text(
+                    inline_message_id=entry["inline_message_id"],
+                    text=reply_text,
+                    reply_markup=None,
+                )
+            except Exception:
+                logger.exception(
+                    "Failed to edit inline message %s with Mira's answer",
+                    entry["inline_message_id"],
+                )
+                return
+            entry["answered"] = True
+            _remember_forward(target_group_msg_id, entry)
+            logger.info(
+                "Updated inline !srch message %s with Mira's reply (forward %s).",
+                entry["inline_message_id"], target_group_msg_id,
+            )
+            try:
+                await msg.reply_text("✅ Resposta entregue ao inline")
+            except Exception:
+                logger.exception("Failed to post inline-confirmation in group")
+            return
+
         try:
             await context.bot.copy_message(
                 chat_id=entry["chat_id"],
@@ -476,78 +512,123 @@ def _html_escape(text: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Inline mode (owner-only)
+# Inline mode (owner-only) — prefix-based commands
 # ---------------------------------------------------------------------------
-# Bot API 10+ inline flow:
-#   1. Owner types `@tNUappbot <frase>` in ANY chat.
-#   2. handle_inline_query returns ONE article. Its visible message (what
-#      gets posted when the owner taps the result) is the user-facing
-#      confirmation: "✅ @nuapp salvou com sucesso o seu pedido: '<frase>'".
-#   3. handle_chosen_inline_result fires when the owner actually picks
-#      the article. We then post the real request into the tNU group
-#      (`@mira, o @tigrao gostaria que <frase>`) so Mira sees it.
-# Non-owner queries return an empty result list — the bot stays silent.
+# Two commands, both owner-only:
+#
+#   !save <frase>   →  Posts in the current chat:
+#                       "✅ @nuapp salvou com sucesso o seu pedido: '<frase>'"
+#                      And relays to the tNU group:
+#                       "@mira, o @tigrao gostaria que <frase>"
+#
+#   !srch <termo>   →  Posts in the current chat:
+#                       "⏳ pesquisando: '<termo>'..."
+#                      And relays to the tNU group:
+#                       "@mira, pesquise sobre \"<termo>\""
+#                      When Mira mentions the bot in the tNU group (via a
+#                      Telegram reply to that relay message), we EDIT the
+#                      inline message in-place with her answer — turning the
+#                      "pesquisando..." into the actual result.
+#
+# Any other prefix / no prefix returns no results, keeping the bot silent.
+# Non-owner queries always return no results.
 
-# Telegram caps inline query length at 256 characters.
 _INLINE_MAX_QUERY_LEN = 256
+_CMD_SAVE = "!save"
+_CMD_SRCH = "!srch"
 
 
-def _build_user_confirmation(query: str) -> str:
-    return (
-        f"✅ @nuapp salvou com sucesso o seu pedido: '{query}'"
-    )
+def _parse_inline_command(raw: str) -> tuple[str | None, str]:
+    """Return (cmd, body) — cmd is "!save", "!srch", or None.
+
+    The prefix is recognised case-insensitively and must be the very first
+    token, followed by at least one whitespace character. Body is trimmed
+    and truncated to the Telegram inline-query limit.
+    """
+    text = (raw or "").strip()
+    if not text:
+        return None, ""
+    head, _, rest = text.partition(" ")
+    cmd = head.lower()
+    if cmd not in (_CMD_SAVE, _CMD_SRCH):
+        return None, ""
+    body = rest.strip()
+    if len(body) > _INLINE_MAX_QUERY_LEN:
+        body = body[:_INLINE_MAX_QUERY_LEN]
+    return cmd, body
 
 
-def _build_group_request(query: str) -> str:
-    return (
-        f"@mira, o @{OWNER_USERNAME} gostaria que {query}"
+def _build_save_confirmation(body: str) -> str:
+    return f"✅ @nuapp salvou com sucesso o seu pedido: '{body}'"
+
+
+def _build_save_group_request(body: str) -> str:
+    return f"@mira, o @{OWNER_USERNAME} gostaria que {body}"
+
+
+def _build_srch_placeholder(body: str) -> str:
+    return f"⏳ pesquisando: '{body}'..."
+
+
+def _build_srch_group_request(body: str) -> str:
+    return f"@mira, pesquise sobre \"{body}\""
+
+
+# Tiny no-op inline keyboard. Telegram only delivers `inline_message_id`
+# in chosen_inline_result if the result carries a reply_markup, and we
+# need that id to edit the !srch message later when Mira answers.
+def _inline_pending_markup() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [[InlineKeyboardButton(text="⏳ aguardando Mira", callback_data="noop")]]
     )
 
 
 async def handle_inline_query(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> None:
-    """Owner-only inline mode. Returns one ready-to-send confirmation
-    article. The real relay to the tNU group only happens when the owner
-    actually picks the article (see handle_chosen_inline_result)."""
+    """Owner-only inline mode dispatcher. Recognises the !save and !srch
+    prefixes; everything else returns no results."""
     iq = update.inline_query
     if iq is None or iq.from_user is None:
         return
     if iq.from_user.id != OWNER_USER_ID:
-        # Stay silent for non-owners. is_personal=True so Telegram never
-        # caches this empty answer for a different user.
         try:
             await iq.answer(results=[], cache_time=1, is_personal=True)
         except Exception:
             logger.exception("Failed to send empty inline answer to non-owner")
         return
 
-    query = (iq.query or "").strip()
-    if not query:
-        # Empty trigger ("@tNUappbot ") — nothing to save yet. Returning
-        # no results keeps Telegram's UI clean.
+    cmd, body = _parse_inline_command(iq.query)
+    if cmd is None or not body:
+        # No recognised prefix yet OR empty body — stay silent.
         try:
             await iq.answer(results=[], cache_time=1, is_personal=True)
         except Exception:
-            logger.exception("Failed to send empty inline answer (empty query)")
+            logger.exception("Failed to send empty inline answer")
         return
-    if len(query) > _INLINE_MAX_QUERY_LEN:
-        query = query[:_INLINE_MAX_QUERY_LEN]
 
-    result = InlineQueryResultArticle(
-        id=f"save:{iq.id}",
-        title="Salvar pedido no tNU",
-        description=query[:120],
-        input_message_content=InputTextMessageContent(
-            message_text=_build_user_confirmation(query),
-        ),
-    )
-    try:
-        await iq.answer(
-            results=[result],
-            cache_time=0,
-            is_personal=True,
+    if cmd == _CMD_SAVE:
+        result = InlineQueryResultArticle(
+            id=f"save:{iq.id}",
+            title="Salvar pedido no tNU",
+            description=body[:120],
+            input_message_content=InputTextMessageContent(
+                message_text=_build_save_confirmation(body),
+            ),
         )
+    else:  # _CMD_SRCH
+        result = InlineQueryResultArticle(
+            id=f"srch:{iq.id}",
+            title="Pesquisar com Mira",
+            description=body[:120],
+            input_message_content=InputTextMessageContent(
+                message_text=_build_srch_placeholder(body),
+            ),
+            reply_markup=_inline_pending_markup(),
+        )
+
+    try:
+        await iq.answer(results=[result], cache_time=0, is_personal=True)
     except Exception:
         logger.exception("Failed to answer inline query")
 
@@ -555,9 +636,13 @@ async def handle_inline_query(
 async def handle_chosen_inline_result(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> None:
-    """Owner picked the inline article — relay the request to the tNU
-    group so Mira sees it. Re-checks the owner id defensively in case
-    Telegram ever delivers a stale/forged update."""
+    """Owner actually picked the article — perform the side-effect:
+
+    - !save: send a one-shot request line to the tNU group.
+    - !srch: send a search request to the tNU group and remember the
+      mapping (group_msg_id -> inline_message_id) so we can edit the
+      inline message when Mira replies.
+    """
     cir = update.chosen_inline_result
     if cir is None or cir.from_user is None:
         return
@@ -573,24 +658,53 @@ async def handle_chosen_inline_result(
         )
         return
 
-    query = (cir.query or "").strip()
-    if not query:
+    cmd, body = _parse_inline_command(cir.query)
+    if cmd is None or not body:
         return
-    if len(query) > _INLINE_MAX_QUERY_LEN:
-        query = query[:_INLINE_MAX_QUERY_LEN]
 
-    text = _build_group_request(query)
-    try:
-        await context.bot.send_message(chat_id=GROUP_CHAT_ID, text=text)
-    except Exception:
-        logger.exception(
-            "Failed to relay inline request to tNU group chat_id=%s",
-            GROUP_CHAT_ID,
+    if cmd == _CMD_SAVE:
+        text = _build_save_group_request(body)
+        try:
+            await context.bot.send_message(chat_id=GROUP_CHAT_ID, text=text)
+        except Exception:
+            logger.exception(
+                "Failed to relay !save to tNU chat_id=%s", GROUP_CHAT_ID
+            )
+            return
+        logger.info("Relayed !save to tNU: %r", body[:80])
+        return
+
+    # !srch — need cir.inline_message_id to be able to edit it later.
+    inline_message_id = cir.inline_message_id
+    if not inline_message_id:
+        logger.warning(
+            "!srch picked but Telegram did not return inline_message_id "
+            "(is the result missing a reply_markup?) — cannot edit later."
         )
         return
-    logger.info(
-        "Relayed inline request to tNU group: %r", query[:80]
+    text = _build_srch_group_request(body)
+    try:
+        sent = await context.bot.send_message(chat_id=GROUP_CHAT_ID, text=text)
+    except Exception:
+        logger.exception(
+            "Failed to relay !srch to tNU chat_id=%s", GROUP_CHAT_ID
+        )
+        return
+    _remember_forward(
+        sent.message_id,
+        {
+            "target_type": "inline_search",
+            "inline_message_id": inline_message_id,
+            "query": body,
+            "answered": False,
+            "created_at": int(time.time()),
+        },
     )
+    logger.info(
+        "Relayed !srch to tNU msg %s (inline_message_id=%s): %r",
+        sent.message_id, inline_message_id, body[:80],
+    )
+
 
 
 # ---------------------------------------------------------------------------
