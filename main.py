@@ -475,6 +475,38 @@ async def handle_group_message(
 
     assert entry is not None and target_group_msg_id is not None and text_to_send
 
+    if entry.get("target_type") == "inline_search":
+        # Path A for !srch: Mira (or the owner) replied to our relay with
+        # text. Edit the inline message in place instead of trying to
+        # forward to a non-existent customer chat.
+        try:
+            await context.bot.edit_message_text(
+                inline_message_id=entry["inline_message_id"],
+                text=text_to_send,
+                reply_markup=None,
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.exception(
+                "Failed to edit inline message %s: %s",
+                entry["inline_message_id"], exc,
+            )
+            try:
+                await msg.reply_text(f"❌ Falha ao atualizar inline: {exc}")
+            except Exception:
+                logger.exception("Failed to post inline-error confirmation")
+            return
+        entry["answered"] = True
+        _remember_forward(target_group_msg_id, entry)
+        logger.info(
+            "Updated inline !srch message %s with reply (forward %s, source=%s).",
+            entry["inline_message_id"], target_group_msg_id, source_label,
+        )
+        try:
+            await msg.reply_text("✅ Resposta entregue ao inline")
+        except Exception:
+            logger.exception("Failed to post inline-confirmation in group")
+        return
+
     try:
         await context.bot.send_message(
             chat_id=entry["chat_id"],
