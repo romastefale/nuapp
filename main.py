@@ -7,6 +7,7 @@ the relayed message) is then sent back to the original customer through
 the business connection.
 """
 
+import asyncio
 import json
 import logging
 import os
@@ -19,6 +20,8 @@ from telegram import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     InlineQueryResultArticle,
+    InputMediaPhoto,
+    InputMediaVideo,
     InputTextMessageContent,
     Update,
 )
@@ -233,6 +236,175 @@ async def _resolve_owner_id(
     return None
 
 
+# ---------------------------------------------------------------------------
+# Media helpers (business messages)
+# ---------------------------------------------------------------------------
+_ALBUM_BUFFER: dict[str, dict[str, Any]] = {}
+_ALBUM_LOCK = asyncio.Lock()
+ALBUM_DEBOUNCE_SECONDS = 1.2
+
+
+def _fmt_duration(seconds: int | None) -> str:
+    if not seconds or seconds <= 0:
+        return ""
+    if seconds < 60:
+        return f"{int(seconds)}s"
+    m, s = divmod(int(seconds), 60)
+    return f"{m}:{s:02d}"
+
+
+def _fmt_size(num: int | None) -> str:
+    if not num or num <= 0:
+        return ""
+    val = float(num)
+    for unit in ("B", "KB", "MB", "GB"):
+        if val < 1024:
+            return f"{val:.0f}{unit}" if unit == "B" else f"{val:.1f}{unit}"
+        val /= 1024
+    return f"{val:.1f}TB"
+
+
+def _describe_media(msg) -> str | None:
+    """PT-BR short description of any media on the business_message so Mira
+    has textual context even without vision. Returns None for text-only."""
+    if msg.photo:
+        p = msg.photo[-1]
+        return f"foto {p.width}x{p.height}"
+    if msg.video:
+        dur = _fmt_duration(msg.video.duration)
+        dim = f"{msg.video.width}x{msg.video.height}"
+        return " ".join(x for x in ("vídeo", dur, dim) if x)
+    if msg.animation:
+        return " ".join(x for x in ("GIF", _fmt_duration(msg.animation.duration)) if x)
+    if msg.video_note:
+        return " ".join(x for x in ("vídeo curto", _fmt_duration(msg.video_note.duration)) if x)
+    if msg.voice:
+        return " ".join(x for x in ("mensagem de voz", _fmt_duration(msg.voice.duration)) if x)
+    if msg.audio:
+        a = msg.audio
+        bits = ["áudio"]
+        if a.title:
+            bits.append(f"'{a.title}'")
+        if a.performer:
+            bits.append(f"— {a.performer}")
+        d = _fmt_duration(a.duration)
+        if d:
+            bits.append(f"· {d}")
+        return " ".join(bits)
+    if msg.sticker:
+        s = msg.sticker
+        bits = ["sticker"]
+        if s.emoji:
+            bits.append(s.emoji)
+        if s.set_name:
+            bits.append(f"(set {s.set_name})")
+        return " ".join(bits)
+    if msg.document:
+        d = msg.document
+        bits = ["documento"]
+        if d.file_name:
+            bits.append(f"'{d.file_name}'")
+        meta = []
+        if d.mime_type:
+            meta.append(d.mime_type)
+        sz = _fmt_size(d.file_size)
+        if sz:
+            meta.append(sz)
+        if meta:
+            bits.append(f"({', '.join(meta)})")
+        return " ".join(bits)
+    return None
+
+
+async def _send_media_to_group(context: ContextTypes.DEFAULT_TYPE, msg) -> int | None:
+    """Reencaminha a mídia ao GROUP_CHAT_ID via file_id (sem download).
+    Retorna o message_id da mídia reenviada, ou None se não havia mídia."""
+    bot = context.bot
+    if msg.photo:
+        sent = await bot.send_photo(GROUP_CHAT_ID, msg.photo[-1].file_id)
+    elif msg.video:
+        sent = await bot.send_video(GROUP_CHAT_ID, msg.video.file_id)
+    elif msg.animation:
+        sent = await bot.send_animation(GROUP_CHAT_ID, msg.animation.file_id)
+    elif msg.video_note:
+        sent = await bot.send_video_note(GROUP_CHAT_ID, msg.video_note.file_id)
+    elif msg.voice:
+        sent = await bot.send_voice(GROUP_CHAT_ID, msg.voice.file_id)
+    elif msg.audio:
+        sent = await bot.send_audio(GROUP_CHAT_ID, msg.audio.file_id)
+    elif msg.sticker:
+        sent = await bot.send_sticker(GROUP_CHAT_ID, msg.sticker.file_id)
+    elif msg.document:
+        sent = await bot.send_document(GROUP_CHAT_ID, msg.document.file_id)
+    else:
+        return None
+    return sent.message_id
+
+
+async def _flush_album(media_group_id: str, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Debounce álbum: aguarda ALBUM_DEBOUNCE_SECONDS de inatividade,
+    então envia tudo com send_media_group + 1 relay textual + prompt Mira."""
+    try:
+        await asyncio.sleep(ALBUM_DEBOUNCE_SECONDS)
+    except asyncio.CancelledError:
+        return
+    async with _ALBUM_LOCK:
+        bundle = _ALBUM_BUFFER.pop(media_group_id, None)
+    if not bundle or not bundle["items"]:
+        return
+    items = bundle["items"]
+    input_media: list = []
+    for i, m in enumerate(items):
+        cap = (m.caption or None) if i == 0 else None
+        if m.photo:
+            input_media.append(InputMediaPhoto(media=m.photo[-1].file_id, caption=cap))
+        elif m.video:
+            input_media.append(InputMediaVideo(media=m.video.file_id, caption=cap))
+    anchor_id: int | None = None
+    if input_media:
+        try:
+            sent_group = await context.bot.send_media_group(
+                chat_id=GROUP_CHAT_ID, media=input_media
+            )
+            anchor_id = sent_group[0].message_id
+        except Exception:
+            logger.exception("send_media_group failed; relaying text-only")
+    n_photos = sum(1 for m in items if m.photo)
+    n_videos = sum(1 for m in items if m.video)
+    chunks = []
+    if n_photos:
+        chunks.append(f"{n_photos} foto" + ("s" if n_photos > 1 else ""))
+    if n_videos:
+        chunks.append(f"{n_videos} vídeo" + ("s" if n_videos > 1 else ""))
+    desc = "álbum com " + " e ".join(chunks) if chunks else "álbum"
+    caption = items[0].caption or items[0].text
+    body = f"[{desc}] {caption}" if caption else f"(enviou {desc})"
+    sender_name = bundle["sender_name"]
+    sender_handle = bundle["sender_handle"]
+    relay_text = (
+        f"📩 <b>{_html_escape(sender_name)}</b>{_html_escape(sender_handle)}:\n"
+        f"<blockquote>{_html_escape(body)}</blockquote>\n"
+        f"{MIRA_PROMPT}"
+    )
+    send_kwargs: dict[str, Any] = {
+        "chat_id": GROUP_CHAT_ID,
+        "text": relay_text,
+        "parse_mode": "HTML",
+    }
+    if anchor_id is not None:
+        send_kwargs["reply_to_message_id"] = anchor_id
+    try:
+        sent = await context.bot.send_message(**send_kwargs)
+    except Exception:
+        logger.exception("Failed to send album relay text")
+        return
+    _remember_forward(sent.message_id, bundle["forward_payload"])
+    logger.info(
+        "Relayed album mgid=%s items=%d -> group msg %s",
+        media_group_id, len(items), sent.message_id,
+    )
+
+
 async def handle_business_message(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> None:
@@ -264,43 +436,85 @@ async def handle_business_message(
 
     sender_name = sender.full_name
     sender_handle = f" (@{sender.username})" if sender.username else ""
-    body = msg.text or msg.caption or "(mensagem sem texto — mídia recebida)"
+    forward_payload = {
+        "chat_id": msg.chat_id,
+        "business_connection_id": business_connection_id,
+        "customer_name": sender_name,
+        "customer_user_id": sender.id,
+    }
 
-    # Format must match the version that worked empirically (see JSON dumps
-    # 151252 / 151258): header first, customer message in <blockquote>,
-    # Mira prompt LAST. Putting the prompt at the end made Mira respond
-    # reliably; moving it to the top broke the flow. All user-provided
-    # strings are HTML-escaped so a `<` / `&` in a name/handle/body
-    # never breaks parse_mode=HTML on Telegram's side.
+    # Álbum: agrega itens com mesmo media_group_id num único envio
+    # (send_media_group) + 1 prompt para a Mira. Debounce curto evita
+    # esperar uploads parciais.
+    if msg.media_group_id:
+        async with _ALBUM_LOCK:
+            bundle = _ALBUM_BUFFER.get(msg.media_group_id)
+            if bundle is None:
+                bundle = {
+                    "items": [],
+                    "sender_name": sender_name,
+                    "sender_handle": sender_handle,
+                    "forward_payload": forward_payload,
+                    "task": None,
+                }
+                _ALBUM_BUFFER[msg.media_group_id] = bundle
+            bundle["items"].append(msg)
+            if bundle["task"]:
+                bundle["task"].cancel()
+            bundle["task"] = asyncio.create_task(
+                _flush_album(msg.media_group_id, context)
+            )
+        return
+
+    # Mensagem única: reenvia mídia (se houver) e manda o relay textual
+    # como reply à mídia, para a Mira ver tudo no mesmo contexto.
+    media_msg_id: int | None = None
+    desc = _describe_media(msg)
+    if desc:
+        try:
+            media_msg_id = await _send_media_to_group(context, msg)
+        except Exception:
+            logger.exception(
+                "Failed to forward media to group; falling back to text-only."
+            )
+
+    caption = msg.text or msg.caption
+    if caption and desc:
+        body = f"[{desc}] {caption}"
+    elif desc:
+        body = f"(enviou {desc})"
+    else:
+        body = caption or "(sem texto)"
+
+    # Header first, customer message in <blockquote>, Mira prompt LAST.
+    # All user-provided strings are HTML-escaped so `<` / `&` in a
+    # name/handle/body never breaks parse_mode=HTML.
     relay_text = (
         f"📩 <b>{_html_escape(sender_name)}</b>{_html_escape(sender_handle)}:\n"
         f"<blockquote>{_html_escape(body)}</blockquote>\n"
         f"{MIRA_PROMPT}"
     )
 
+    send_kwargs: dict[str, Any] = {
+        "chat_id": GROUP_CHAT_ID,
+        "text": relay_text,
+        "parse_mode": "HTML",
+    }
+    if media_msg_id is not None:
+        send_kwargs["reply_to_message_id"] = media_msg_id
+
     try:
-        sent = await context.bot.send_message(
-            chat_id=GROUP_CHAT_ID,
-            text=relay_text,
-            parse_mode="HTML",
-        )
+        sent = await context.bot.send_message(**send_kwargs)
     except Exception:
         logger.exception("Failed to relay business message to group")
         return
 
-    _remember_forward(
-        sent.message_id,
-        {
-            "chat_id": msg.chat_id,
-            "business_connection_id": business_connection_id,
-            "customer_name": sender_name,
-            "customer_user_id": sender.id,
-        },
-    )
+    _remember_forward(sent.message_id, forward_payload)
     logger.info(
-        "Relayed business msg from user=%s -> group msg %s",
+        "Relayed business msg from user=%s -> group msg %s (media=%s)",
         sender.id,
         sent.message_id,
+        desc or "none",
     )
 
 
