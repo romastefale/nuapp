@@ -266,13 +266,6 @@ async def handle_external_group(
         return
 
     if _is_direct_mention(msg):
-        # Relay the mention to the tNU group with the Mira prompt, just
-        # like the Business flow. Mira's reply in tNU will be auto-copied
-        # back to this external group as a Telegram reply to the original
-        # mention via the "group" target_type branch of handle_group_message.
-        if GROUP_CHAT_ID is None:
-            logger.warning("Direct mention received but GROUP_CHAT_ID is not set.")
-            return
         chat_label = msg.chat.title or str(msg.chat_id)
         sender = msg.from_user
         sender_handle = f" (@{sender.username})" if sender.username else ""
@@ -284,37 +277,31 @@ async def handle_external_group(
             if qtext:
                 quote_line = (
                     f"\n↪ em resposta a <i>{_html_escape(qauthor)}</i>:\n"
-                    f"<blockquote>{_html_escape(qtext[:500])}</blockquote>"
+                    f"<blockquote>{_html_escape(qtext[:300])}</blockquote>"
                 )
-        relay_text = (
-            f"📣 <b>{_html_escape(sender.full_name)}</b>"
-            f"{_html_escape(sender_handle)} em "
-            f"<i>{_html_escape(chat_label)}</i>:\n"
-            f"<blockquote>{_html_escape(text[:1000])}</blockquote>"
-            f"{quote_line}\n"
-            f"{MIRA_PROMPT}"
+        notif = (
+            f"📣 Menção direta em <b>{_html_escape(chat_label)}</b>\n"
+            f"De: <b>{_html_escape(sender.full_name)}</b>"
+            f"{_html_escape(sender_handle)}\n"
+            f"<blockquote>{_html_escape(text[:500])}</blockquote>"
+            f"{quote_line}"
         )
         try:
-            sent = await context.bot.send_message(
-                chat_id=GROUP_CHAT_ID,
-                text=relay_text,
-                parse_mode="HTML",
+            await context.bot.send_message(
+                chat_id=OWNER_USER_ID, text=notif, parse_mode="HTML"
             )
         except Exception:
-            logger.exception("Failed to relay external-group mention to tNU")
-            return
-        _remember_forward(
-            sent.message_id,
-            {
-                "target_type": "group",
-                "chat_id": msg.chat_id,
-                "reply_to_message_id": msg.message_id,
-                "customer_name": f"{sender.full_name} em {chat_label}",
-            },
-        )
+            logger.exception(
+                "Failed to DM owner about direct mention "
+                "(owner must /start the bot in private at least once)"
+            )
+        try:
+            await msg.reply_text("opa, vi aqui — já te respondo 👀")
+        except Exception:
+            logger.exception("Failed to ack direct mention in group")
         logger.info(
-            "Relayed external-group mention by %s in chat %s -> tNU msg %s",
-            sender.id, msg.chat_id, sent.message_id,
+            "Direct mention by %s in chat %s — owner notified.",
+            sender.id, msg.chat_id,
         )
         return
 
@@ -575,26 +562,14 @@ async def handle_group_message(
             target_group_msg_id,
         )
         try:
-            if entry.get("target_type") == "group":
-                # Mention from an external group: copy Mira's reply BACK to
-                # that group as a Telegram reply to the original mention.
-                await context.bot.copy_message(
-                    chat_id=entry["chat_id"],
-                    from_chat_id=GROUP_CHAT_ID,
-                    message_id=msg.message_id,
-                    reply_to_message_id=entry["reply_to_message_id"],
-                )
-            else:
-                # Business chat target: send via the business connection so
-                # the customer sees it coming from the owner's account.
-                await context.bot.copy_message(
-                    chat_id=entry["chat_id"],
-                    from_chat_id=GROUP_CHAT_ID,
-                    message_id=msg.message_id,
-                    business_connection_id=entry["business_connection_id"],
-                )
+            await context.bot.copy_message(
+                chat_id=entry["chat_id"],
+                from_chat_id=GROUP_CHAT_ID,
+                message_id=msg.message_id,
+                business_connection_id=entry["business_connection_id"],
+            )
         except Exception as exc:  # noqa: BLE001
-            logger.exception("Failed to copy bot reply to target: %s", exc)
+            logger.exception("Failed to copy bot reply to customer: %s", exc)
             return
         entry["answered"] = True
         _remember_forward(target_group_msg_id, entry)
@@ -617,20 +592,13 @@ async def handle_group_message(
     assert entry is not None and target_group_msg_id is not None and text_to_send
 
     try:
-        if entry.get("target_type") == "group":
-            await context.bot.send_message(
-                chat_id=entry["chat_id"],
-                text=text_to_send,
-                reply_to_message_id=entry["reply_to_message_id"],
-            )
-        else:
-            await context.bot.send_message(
-                chat_id=entry["chat_id"],
-                text=text_to_send,
-                business_connection_id=entry["business_connection_id"],
-            )
+        await context.bot.send_message(
+            chat_id=entry["chat_id"],
+            text=text_to_send,
+            business_connection_id=entry["business_connection_id"],
+        )
     except Exception as exc:  # noqa: BLE001
-        logger.exception("Failed to deliver reply to target: %s", exc)
+        logger.exception("Failed to deliver reply to customer: %s", exc)
         await msg.reply_text(f"❌ Falha ao enviar: {exc}")
         return
 
