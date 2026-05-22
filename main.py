@@ -11,6 +11,7 @@ import json
 import logging
 import os
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -32,7 +33,14 @@ logging.basicConfig(
     level=logging.INFO,
     stream=sys.stdout,
 )
+# Silence httpx's per-request INFO logs — they spam getUpdates calls every
+# ~10s. We still see WARN/ERROR (real network problems).
+logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
+
+# Stale forwards (no Mira reply) are ignored after this many seconds so we
+# don't route a fresh Mira reply into an old, abandoned customer thread.
+FORWARD_TTL_SECONDS = int(os.environ.get("FORWARD_TTL_SECONDS", "900"))
 
 # ---------------------------------------------------------------------------
 # Environment (fail-fast)
@@ -88,8 +96,12 @@ def _load_state() -> dict[str, Any]:
 
 
 def _save_state(state: dict[str, Any]) -> None:
+    """Atomically persist state — write to .tmp then os.replace so we never
+    end up with a half-written state.json after a crash mid-write."""
     try:
-        STATE_FILE.write_text(json.dumps(state, ensure_ascii=False), encoding="utf-8")
+        tmp = STATE_FILE.with_suffix(STATE_FILE.suffix + ".tmp")
+        tmp.write_text(json.dumps(state, ensure_ascii=False), encoding="utf-8")
+        os.replace(tmp, STATE_FILE)
     except Exception:
         logger.exception("Failed to persist state.json")
 
@@ -98,6 +110,7 @@ STATE: dict[str, Any] = _load_state()
 
 
 def _remember_forward(group_msg_id: int, payload: dict[str, Any]) -> None:
+    payload.setdefault("created_at", int(time.time()))
     STATE["forwards"][str(group_msg_id)] = payload
     _save_state(STATE)
 
@@ -107,11 +120,15 @@ def _lookup_forward(group_msg_id: int) -> dict[str, Any] | None:
 
 
 def _oldest_unanswered_forward() -> tuple[int, dict[str, Any]] | None:
-    """Return (group_msg_id, payload) for the oldest still-unanswered forward."""
+    """Return (group_msg_id, payload) for the oldest still-unanswered,
+    not-yet-expired forward. Forwards older than FORWARD_TTL_SECONDS are
+    skipped so a fresh Mira reply doesn't get routed to a stale thread."""
+    now = int(time.time())
     pending = [
         (int(mid), payload)
         for mid, payload in STATE["forwards"].items()
         if not payload.get("answered")
+        and now - int(payload.get("created_at", now)) <= FORWARD_TTL_SECONDS
     ]
     if not pending:
         return None
@@ -167,18 +184,24 @@ async def log_every_update(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
 
 async def on_business_connection(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Capture the business account owner's user_id so we can filter outgoing msgs."""
+    """Track business connection state. Learn the owner's user_id and warn
+    loudly when the connection gets revoked/disabled so we know why
+    outbound sends are failing."""
     bc = update.business_connection
     if bc is None or bc.user is None:
         return
     STATE["owner_user_id"] = bc.user.id
+    STATE["business_connection_enabled"] = bool(bc.is_enabled)
     _save_state(STATE)
-    logger.info(
-        "Business connection %s active=%s owner=%s",
-        bc.id,
-        bc.is_enabled,
-        bc.user.id,
-    )
+    if bc.is_enabled:
+        logger.info("Business connection %s ENABLED owner=%s", bc.id, bc.user.id)
+    else:
+        logger.warning(
+            "Business connection %s DISABLED owner=%s — outbound sends will fail "
+            "until the user re-enables Telegram Business permissions.",
+            bc.id,
+            bc.user.id,
+        )
 
 
 async def _resolve_owner_id(
@@ -236,10 +259,12 @@ async def handle_business_message(
 
     # IMPORTANT: the AI trigger ("Mira, …") MUST be the first thing in the
     # message — the AI bot in the group only fires when its name appears at
-    # the very beginning. Customer context goes after.
+    # the very beginning. Customer context goes after. All user-provided
+    # strings are HTML-escaped so a `<` in a name/handle/body never breaks
+    # parse_mode=HTML on Telegram's side.
     relay_text = (
         f"{MIRA_PROMPT}\n\n"
-        f"📩 De <b>{sender_name}</b>{sender_handle}:\n"
+        f"📩 De <b>{_html_escape(sender_name)}</b>{_html_escape(sender_handle)}:\n"
         f"<blockquote>{_html_escape(body)}</blockquote>"
     )
 
@@ -269,23 +294,35 @@ async def handle_business_message(
     )
 
 
+async def handle_edited_business_message(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> None:
+    """Log customer edits of business messages so we know about them. We
+    intentionally do NOT re-relay edits to the group — that would spawn
+    a duplicate prompt to Mira every time the customer fixes a typo."""
+    msg = update.edited_business_message
+    if msg is None or msg.from_user is None:
+        return
+    logger.info(
+        "Customer %s edited business msg %s: %r",
+        msg.from_user.id,
+        msg.message_id,
+        (msg.text or msg.caption or "")[:120],
+    )
+
+
 async def handle_group_message(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> None:
-    """Route user replies in the group back to the customer.
+    """Route messages posted in the group back to the customer.
 
-    Two supported paths (user must use Telegram's *reply* feature):
+    Two paths:
 
-    1. Reply to our own relayed message  →  send the user's typed text
-       to the corresponding customer (manual / edited reply).
-    2. Reply to Mira's (or any other bot's) message in the group  →
-       send THAT bot's text to the customer, mapped to the oldest still
-       unanswered forward. The user's own text in this reply is ignored
-       (so a "ok" / "+" / "vai" is enough to confirm).
-
-    Note: the Bot API never delivers messages authored by other bots
-    directly to our bot, so we can't intercept Mira's reply on her own
-    — the user has to "approve" it with a reply.
+    1. **Human reply** to one of our relay messages → send the human's
+       typed text to the corresponding customer.
+    2. **Bot post** (Mira) in the group → copy her message as-is to the
+       customer. Prefers her Telegram reply target; falls back to the
+       oldest still-unanswered forward (TTL gated).
     """
     msg = update.message
     if msg is None or msg.from_user is None:
@@ -329,16 +366,29 @@ async def handle_group_message(
                 await msg.reply_text("❌ Por enquanto só dá pra responder com texto.")
             return
     elif sender_is_bot:
-        # Path B: Mira (or any other bot) posted in the group. Map to the
-        # oldest still-unanswered forward and copy her message *as-is* to
-        # the customer via copy_message — using our admin rights in the
-        # group. This preserves text formatting, emoji, mentions, media
-        # (stickers, images, audio) instead of dumping plain text.
-        pending = _oldest_unanswered_forward()
-        if pending is None:
-            logger.info("Bot %s posted in group but no pending forward — ignoring.", from_user.username)
-            return
-        target_group_msg_id, entry = pending
+        # Path B: Mira (or any other bot) posted in the group. Prefer the
+        # *exact* relay she replied to (eliminates race conditions when
+        # multiple customer messages are pending). Fall back to oldest
+        # still-unanswered forward only if she didn't use Telegram reply.
+        # Then copy her message *as-is* (text + emoji + media) to the
+        # customer via copy_message — using our admin rights in the group.
+        if reply_to is not None:
+            replied_entry = _lookup_forward(reply_to.message_id)
+            if replied_entry is not None and not replied_entry.get("answered"):
+                target_group_msg_id, entry = reply_to.message_id, replied_entry
+            else:
+                pending = _oldest_unanswered_forward()
+                if pending is None:
+                    logger.info("Bot %s replied to %s but no matching/pending forward — ignoring.",
+                                from_user.username, reply_to.message_id)
+                    return
+                target_group_msg_id, entry = pending
+        else:
+            pending = _oldest_unanswered_forward()
+            if pending is None:
+                logger.info("Bot %s posted in group but no pending forward — ignoring.", from_user.username)
+                return
+            target_group_msg_id, entry = pending
         source_label = "IA"
         logger.info(
             "Auto-copying bot %s's msg %s -> customer (forward %s).",
@@ -425,20 +475,26 @@ def main() -> None:
     application.add_handler(TypeHandler(Update, log_every_update), group=-2)
 
     # Learn the business account owner's id from connection updates.
-    # Placed in its own dispatch group so it doesn't swallow other handlers.
     application.add_handler(TypeHandler(Update, on_business_connection), group=-1)
 
-    # Group 0: catch business messages (sent from a counterparty inside a
-    # business chat) and relay them to the configured group.
+    # Group 0: business messages from the customer → relay to the group.
     application.add_handler(
         MessageHandler(filters.UpdateType.BUSINESS_MESSAGE, handle_business_message),
         group=0,
     )
 
-    # Group 1 (separate dispatch group): handle messages posted inside the
-    # configured private group so they get routed back to the customer.
-    # We do NOT filter by REPLY here because some bots (e.g. Mira) answer
-    # with a plain message instead of using Telegram's reply feature.
+    # Group 0: customer edits — log only, do not re-relay (avoids duplicate
+    # AI prompts every time a customer fixes a typo).
+    application.add_handler(
+        MessageHandler(
+            filters.UpdateType.EDITED_BUSINESS_MESSAGE,
+            handle_edited_business_message,
+        ),
+        group=0,
+    )
+
+    # Group 1: messages posted inside the configured private group.
+    # No REPLY filter — Mira often answers without using Telegram reply.
     application.add_handler(
         MessageHandler(filters.ChatType.GROUPS, handle_group_message),
         group=1,
@@ -453,7 +509,16 @@ def main() -> None:
     else:
         logger.info("Relaying business messages to group %s", GROUP_CHAT_ID)
 
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
+    # Restrict allowed_updates to exactly what we use — reduces Telegram
+    # server-side work and noise in getUpdates payloads.
+    application.run_polling(
+        allowed_updates=[
+            Update.BUSINESS_CONNECTION,
+            Update.BUSINESS_MESSAGE,
+            Update.EDITED_BUSINESS_MESSAGE,
+            Update.MESSAGE,
+        ]
+    )
 
 
 if __name__ == "__main__":

@@ -1,0 +1,193 @@
+{
+  "associatedMedia" : {
+
+  },
+  "associatedMessageIds" : [
+
+  ],
+  "associatedMessages" : {
+    "items" : [
+
+    ]
+  },
+  "associatedStories" : {
+
+  },
+  "attributes" : [
+    {
+      "entities" : [
+        {
+          "range" : {
+            "lowerBound" : 3,
+            "upperBound" : 10
+          },
+          "type" : "Bold"
+        },
+        {
+          "range" : {
+            "lowerBound" : 12,
+            "upperBound" : 22
+          },
+          "type" : "Mention"
+        },
+        {
+          "range" : {
+            "lowerBound" : 25,
+            "upperBound" : 56
+          },
+          "type" : {
+            "BlockQuote" : {
+              "isCollapsed" : false
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "author" : {
+    "accessHash" : {
+      "personal" : 2802019064482508376
+    },
+    "botInfo" : {
+      "flags" : {
+        "rawValue" : 3427
+      },
+      "inlinePlaceholder" : "…."
+    },
+    "firstName" : "NUapp",
+    "flags" : {
+      "rawValue" : 0
+    },
+    "id" : {
+      "id" : {
+        "rawValue" : 8760891933
+      },
+      "namespace" : {
+        "rawValue" : 0
+      }
+    },
+    "photo" : [
+      {
+        "dimensions" : {
+          "height" : 80,
+          "width" : 80
+        },
+        "hasVideo" : false,
+        "immediateThumbnailData" : "",
+        "isPersonal" : false,
+        "progressiveSizes" : [
+
+        ],
+        "resource" : {
+          "datacenterId" : 1,
+          "photoId" : 4934194073761942588,
+          "sizeSpec" : "small"
+        },
+        "typeHint" : "generic"
+      },
+      {
+        "dimensions" : {
+          "height" : 640,
+          "width" : 640
+        },
+        "hasVideo" : false,
+        "immediateThumbnailData" : "",
+        "isPersonal" : false,
+        "progressiveSizes" : [
+
+        ],
+        "resource" : {
+          "datacenterId" : 1,
+          "photoId" : 4934194073761942588,
+          "sizeSpec" : "fullSize"
+        },
+        "typeHint" : "generic"
+      }
+    ],
+    "storiesHidden" : false,
+    "username" : "tNUappbot",
+    "usernames" : [
+
+    ]
+  },
+  "customTags" : [
+
+  ],
+  "flags" : {
+    "rawValue" : 68
+  },
+  "globalTags" : {
+    "rawValue" : 0
+  },
+  "id" : {
+    "id" : 151258,
+    "namespace" : 0,
+    "peerId" : {
+      "id" : {
+        "rawValue" : 5272090068
+      },
+      "namespace" : {
+        "rawValue" : 1
+      }
+    }
+  },
+  "localTags" : {
+    "rawValue" : 0
+  },
+  "media" : [
+
+  ],
+  "peers" : {
+    "items" : [
+      {
+        ".0" : {
+          "id" : {
+            "rawValue" : 5272090068
+          },
+          "namespace" : {
+            "rawValue" : 1
+          }
+        },
+        ".1" : {
+          "creationDate" : 1779407487,
+          "defaultBannedRights" : {
+            "flags" : {
+              "rawValue" : 67108864
+            },
+            "untilDate" : 2147483647
+          },
+          "flags" : {
+            "rawValue" : 0
+          },
+          "id" : {
+            "id" : {
+              "rawValue" : 5272090068
+            },
+            "namespace" : {
+              "rawValue" : 1
+            }
+          },
+          "membership" : "Member",
+          "participantCount" : 3,
+          "photo" : [
+
+          ],
+          "role" : {
+            "creator" : {
+
+            }
+          },
+          "title" : "tNU",
+          "version" : 6
+        }
+      }
+    ]
+  },
+  "stableId" : 50788,
+  "stableVersion" : 0,
+  "tags" : {
+    "rawValue" : 0
+  },
+  "text" : "📩 ㅤㅤmario (@marionesy):\nah entendi, como foi o seu dia?\nMira, responda essa mensagem em até 1 frase curta, casual e neutra, em português, no mesmo tom de quem escreveu. Não peça desculpas, não diga que demorou, não use saudações longas, não comente o assunto antigo. Exemplos do estilo desejado: \"oi\", \"oi, tudo bem?\", \"tá bom\", \"manda aí\". Escreva apenas a resposta final, sem aspas e sem explicação.",
+  "timestamp" : 1779408115
+}
