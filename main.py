@@ -10,8 +10,6 @@ the business connection.
 import json
 import logging
 import os
-import random
-import re
 import sys
 import time
 from pathlib import Path
@@ -43,47 +41,6 @@ logger = logging.getLogger(__name__)
 # Stale forwards (no Mira reply) are ignored after this many seconds so we
 # don't route a fresh Mira reply into an old, abandoned customer thread.
 FORWARD_TTL_SECONDS = int(os.environ.get("FORWARD_TTL_SECONDS", "900"))
-
-# Owner — the only person allowed to talk to the bot in private DM and the
-# user whose messages/handle trigger the "direct mention" flow in groups.
-OWNER_USER_ID = int(os.environ.get("OWNER_USER_ID", "8505890439"))
-
-# Trigger words that hint someone might be talking about the owner in a
-# group. Substring match (case-insensitive) for the long ones; word-
-# boundary regex for the short ambiguous tokens so we don't fire on
-# "perigo" / "pizza" / "pedaço" etc.
-_TRIGGER_SUBSTRINGS: tuple[str, ...] = (
-    "pierinho", "tigrao", "tigrão", "pedro", "pidro",
-)
-_TRIGGER_WORDS_RE = re.compile(r"\b(pe|pi)\b", re.IGNORECASE)
-
-_DOUBT_REPLIES: tuple[str, ...] = (
-    "opa, é comigo ou é outro pi por aí? 😅",
-    "tá falando comigo ou foi outra pessoa?",
-    "ué, me chamaram? ou foi outro?",
-    "epa, sou eu mesmo? 🤔",
-)
-
-
-def _matched_trigger(text: str) -> bool:
-    if not text:
-        return False
-    lower = text.lower()
-    if any(t in lower for t in _TRIGGER_SUBSTRINGS):
-        return True
-    return bool(_TRIGGER_WORDS_RE.search(text))
-
-
-def _is_direct_mention(msg: Any) -> bool:
-    """A direct mention of the owner = explicit @tigrao in the text OR a
-    Telegram reply targeting a message authored by the owner."""
-    text = (msg.text or msg.caption or "").lower()
-    if "@tigrao" in text:
-        return True
-    rt = msg.reply_to_message
-    if rt is not None and rt.from_user is not None and rt.from_user.id == OWNER_USER_ID:
-        return True
-    return False
 
 # ---------------------------------------------------------------------------
 # Environment (fail-fast)
@@ -193,127 +150,6 @@ async def cmd_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         f"Título: {chat.title or chat.full_name or '-'}"
     )
     await context.bot.send_message(chat_id=chat.id, text=text, parse_mode="HTML")
-
-
-async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Owner-only configuration/status command in private DMs."""
-    chat = update.effective_chat
-    user = update.effective_user
-    msg = update.effective_message
-    if chat is None or chat.type != "private" or msg is None:
-        return
-    if user is None or user.id != OWNER_USER_ID:
-        try:
-            await msg.reply_text("ops, esse bot é particular.")
-        except Exception:
-            logger.exception("Failed to reject non-owner /start")
-        return
-    pending = sum(1 for v in STATE["forwards"].values() if not v.get("answered"))
-    txt = (
-        "oi, tigrão. tô on.\n"
-        f"grupo tNU: <code>{GROUP_CHAT_ID}</code>\n"
-        f"business owner: <code>{STATE.get('owner_user_id')}</code>\n"
-        f"business enabled: <code>{STATE.get('business_connection_enabled')}</code>\n"
-        f"forwards pendentes: <b>{pending}</b>"
-    )
-    await msg.reply_text(txt, parse_mode="HTML")
-
-
-async def handle_private_message(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-) -> None:
-    """Private DMs are owner-only. Non-owners get a single polite refusal
-    and are then ignored. Keeps the bot private as the owner asked."""
-    chat = update.effective_chat
-    user = update.effective_user
-    msg = update.effective_message
-    if chat is None or chat.type != "private" or msg is None or user is None:
-        return
-    if user.is_bot or user.id == OWNER_USER_ID:
-        return  # owner is allowed; bots ignored
-    try:
-        await msg.reply_text("ops, esse bot é particular.")
-    except Exception:
-        logger.exception("Failed to refuse non-owner private DM")
-
-
-async def handle_external_group(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-) -> None:
-    """React to mentions of the owner in groups *other than* the tNU relay
-    group.
-
-    - Direct mention (@tigrao in text or Telegram-reply targeting the
-      owner) → ack in the group AND DM the owner privately with full
-      context (sender, message, quoted message if any).
-    - Soft trigger word (pierinho/tigrão/pedro/pidro/pe/pi) → ambiguous
-      "is this for me?" reply in the group. No private notification.
-    """
-    msg = update.message
-    if msg is None or msg.from_user is None or msg.chat is None:
-        return
-    if msg.chat.type not in ("group", "supergroup"):
-        return
-    if GROUP_CHAT_ID is not None and msg.chat_id == GROUP_CHAT_ID:
-        return  # the tNU relay group is handled by handle_group_message
-    if msg.from_user.is_bot or msg.from_user.id == context.bot.id:
-        return
-    if msg.from_user.id == OWNER_USER_ID:
-        return  # don't react to the owner himself
-
-    text = (msg.text or msg.caption or "").strip()
-    if not text:
-        return
-
-    if _is_direct_mention(msg):
-        chat_label = msg.chat.title or str(msg.chat_id)
-        sender = msg.from_user
-        sender_handle = f" (@{sender.username})" if sender.username else ""
-        rt = msg.reply_to_message
-        quote_line = ""
-        if rt is not None:
-            qtext = rt.text or rt.caption
-            qauthor = rt.from_user.full_name if rt.from_user else "?"
-            if qtext:
-                quote_line = (
-                    f"\n↪ em resposta a <i>{_html_escape(qauthor)}</i>:\n"
-                    f"<blockquote>{_html_escape(qtext[:300])}</blockquote>"
-                )
-        notif = (
-            f"📣 Menção direta em <b>{_html_escape(chat_label)}</b>\n"
-            f"De: <b>{_html_escape(sender.full_name)}</b>"
-            f"{_html_escape(sender_handle)}\n"
-            f"<blockquote>{_html_escape(text[:500])}</blockquote>"
-            f"{quote_line}"
-        )
-        try:
-            await context.bot.send_message(
-                chat_id=OWNER_USER_ID, text=notif, parse_mode="HTML"
-            )
-        except Exception:
-            logger.exception(
-                "Failed to DM owner about direct mention "
-                "(owner must /start the bot in private at least once)"
-            )
-        try:
-            await msg.reply_text("opa, vi aqui — já te respondo 👀")
-        except Exception:
-            logger.exception("Failed to ack direct mention in group")
-        logger.info(
-            "Direct mention by %s in chat %s — owner notified.",
-            sender.id, msg.chat_id,
-        )
-        return
-
-    if _matched_trigger(text):
-        try:
-            await msg.reply_text(random.choice(_DOUBT_REPLIES))
-        except Exception:
-            logger.exception("Failed to reply to soft trigger")
-        logger.info(
-            "Soft trigger by %s in chat %s: %r",
-            msg.from_user.id, msg.chat_id, text[:80],
-        )
 
 
 async def log_every_update(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -636,10 +472,6 @@ def main() -> None:
     # /id works anywhere — DM, group, business chat.
     application.add_handler(CommandHandler("id", cmd_id))
 
-    # /start works only in private DMs and only for the owner. Other users
-    # get a single polite refusal via handle_private_message below.
-    application.add_handler(CommandHandler("start", cmd_start))
-
     # Diagnostic: log every incoming update (does not block any handler).
     application.add_handler(TypeHandler(Update, log_every_update), group=-2)
 
@@ -667,20 +499,6 @@ def main() -> None:
     application.add_handler(
         MessageHandler(filters.ChatType.GROUPS, handle_group_message),
         group=1,
-    )
-
-    # Group 2: external groups (anything that's NOT the tNU relay group).
-    # Reacts to trigger words and direct mentions of the owner.
-    application.add_handler(
-        MessageHandler(filters.ChatType.GROUPS, handle_external_group),
-        group=2,
-    )
-
-    # Group 3: private DMs from non-owners get a polite refusal. Owner DMs
-    # fall through silently (commands above already cover the useful ones).
-    application.add_handler(
-        MessageHandler(filters.ChatType.PRIVATE, handle_private_message),
-        group=3,
     )
 
     logger.info("Starting Secretary Bot polling loop...")
