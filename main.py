@@ -104,7 +104,7 @@ def _load_state() -> dict[str, Any]:
             return json.loads(STATE_FILE.read_text(encoding="utf-8"))
         except Exception:
             logger.exception("Could not parse state.json; starting fresh.")
-    return {"forwards": {}, "owner_user_id": None}
+    return {"forwards": {}, "owner_user_id": None, "aliases": {}}
 
 
 def _save_state(state: dict[str, Any]) -> None:
@@ -119,6 +119,8 @@ def _save_state(state: dict[str, Any]) -> None:
 
 
 STATE: dict[str, Any] = _load_state()
+STATE.setdefault("aliases", {})
+STATE.setdefault("forwards", {})
 
 
 def _remember_forward(group_msg_id: int, payload: dict[str, Any]) -> None:
@@ -128,7 +130,26 @@ def _remember_forward(group_msg_id: int, payload: dict[str, Any]) -> None:
 
 
 def _lookup_forward(group_msg_id: int) -> dict[str, Any] | None:
-    return STATE["forwards"].get(str(group_msg_id))
+    """Lookup by primary relay id, falling back through the aliases map
+    (media-anchor message id -> primary relay id) so replies to a media
+    anchor resolve to the same forward entry."""
+    key = str(group_msg_id)
+    direct = STATE["forwards"].get(key)
+    if direct is not None:
+        return direct
+    primary = STATE.get("aliases", {}).get(key)
+    if primary is not None:
+        return STATE["forwards"].get(str(primary))
+    return None
+
+
+def _remember_alias(alias_msg_id: int, primary_msg_id: int) -> None:
+    """Map a secondary group message id (e.g. the media anchor) to the
+    primary relay id so a reply to either resolves the same forward."""
+    if alias_msg_id == primary_msg_id:
+        return
+    STATE.setdefault("aliases", {})[str(alias_msg_id)] = primary_msg_id
+    _save_state(STATE)
 
 
 def _oldest_unanswered_forward() -> tuple[int, dict[str, Any]] | None:
@@ -140,7 +161,8 @@ def _oldest_unanswered_forward() -> tuple[int, dict[str, Any]] | None:
         (int(mid), payload)
         for mid, payload in STATE["forwards"].items()
         if not payload.get("answered")
-        and now - int(payload.get("created_at", now)) <= FORWARD_TTL_SECONDS
+        and payload.get("created_at") is not None
+        and now - int(payload["created_at"]) <= FORWARD_TTL_SECONDS
     ]
     if not pending:
         return None
@@ -341,15 +363,16 @@ async def _send_media_to_group(context: ContextTypes.DEFAULT_TYPE, msg) -> int |
     return sent.message_id
 
 
-async def _flush_album(media_group_id: str, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def _flush_album(album_key: str, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Debounce álbum: aguarda ALBUM_DEBOUNCE_SECONDS de inatividade,
-    então envia tudo com send_media_group + 1 relay textual + prompt Mira."""
+    então envia tudo com send_media_group + 1 relay textual + prompt Mira.
+    album_key = f"{business_connection_id}:{chat_id}:{media_group_id}"."""
     try:
         await asyncio.sleep(ALBUM_DEBOUNCE_SECONDS)
     except asyncio.CancelledError:
         return
     async with _ALBUM_LOCK:
-        bundle = _ALBUM_BUFFER.pop(media_group_id, None)
+        bundle = _ALBUM_BUFFER.pop(album_key, None)
     if not bundle or not bundle["items"]:
         return
     items = bundle["items"]
@@ -399,9 +422,11 @@ async def _flush_album(media_group_id: str, context: ContextTypes.DEFAULT_TYPE) 
         logger.exception("Failed to send album relay text")
         return
     _remember_forward(sent.message_id, bundle["forward_payload"])
+    if anchor_id is not None:
+        _remember_alias(anchor_id, sent.message_id)
     logger.info(
-        "Relayed album mgid=%s items=%d -> group msg %s",
-        media_group_id, len(items), sent.message_id,
+        "Relayed album key=%s items=%d -> group msg %s (anchor=%s)",
+        album_key, len(items), sent.message_id, anchor_id,
     )
 
 
@@ -447,8 +472,11 @@ async def handle_business_message(
     # (send_media_group) + 1 prompt para a Mira. Debounce curto evita
     # esperar uploads parciais.
     if msg.media_group_id:
+        # Composite key prevents collisions when two different customers
+        # happen to share a media_group_id (it's only unique within a chat).
+        album_key = f"{business_connection_id}:{msg.chat_id}:{msg.media_group_id}"
         async with _ALBUM_LOCK:
-            bundle = _ALBUM_BUFFER.get(msg.media_group_id)
+            bundle = _ALBUM_BUFFER.get(album_key)
             if bundle is None:
                 bundle = {
                     "items": [],
@@ -457,12 +485,12 @@ async def handle_business_message(
                     "forward_payload": forward_payload,
                     "task": None,
                 }
-                _ALBUM_BUFFER[msg.media_group_id] = bundle
+                _ALBUM_BUFFER[album_key] = bundle
             bundle["items"].append(msg)
             if bundle["task"]:
                 bundle["task"].cancel()
             bundle["task"] = asyncio.create_task(
-                _flush_album(msg.media_group_id, context)
+                _flush_album(album_key, context)
             )
         return
 
@@ -510,6 +538,8 @@ async def handle_business_message(
         return
 
     _remember_forward(sent.message_id, forward_payload)
+    if media_msg_id is not None:
+        _remember_alias(media_msg_id, sent.message_id)
     logger.info(
         "Relayed business msg from user=%s -> group msg %s (media=%s)",
         sender.id,
