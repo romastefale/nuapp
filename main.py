@@ -15,11 +15,17 @@ import time
 from pathlib import Path
 from typing import Any
 
-from telegram import Update
+from telegram import (
+    InlineQueryResultArticle,
+    InputTextMessageContent,
+    Update,
+)
 from telegram.ext import (
     ApplicationBuilder,
+    ChosenInlineResultHandler,
     CommandHandler,
     ContextTypes,
+    InlineQueryHandler,
     MessageHandler,
     TypeHandler,
     filters,
@@ -66,6 +72,12 @@ def _parse_int(value: str | None) -> int | None:
 # Private group where the user + Mira AI bot live. Optional at boot — the
 # bot can run without it and the /id command helps you discover the value.
 GROUP_CHAT_ID: int | None = _parse_int(os.environ.get("GROUP_CHAT_ID"))
+
+# Owner-only inline mode. Inline queries from any other user return an
+# empty result set, so the bot stays silent for non-owners. Both values
+# are env-overridable.
+OWNER_USER_ID: int = int(os.environ.get("OWNER_USER_ID", "8505890439"))
+OWNER_USERNAME: str = os.environ.get("OWNER_USERNAME", "tigrao")
 
 # Prefix that wakes the Mira AI bot in the group. The relay message starts
 # with this so Mira automatically answers with a suggested reply. The bot
@@ -464,6 +476,124 @@ def _html_escape(text: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Inline mode (owner-only)
+# ---------------------------------------------------------------------------
+# Bot API 10+ inline flow:
+#   1. Owner types `@tNUappbot <frase>` in ANY chat.
+#   2. handle_inline_query returns ONE article. Its visible message (what
+#      gets posted when the owner taps the result) is the user-facing
+#      confirmation: "✅ @nuapp salvou com sucesso o seu pedido: '<frase>'".
+#   3. handle_chosen_inline_result fires when the owner actually picks
+#      the article. We then post the real request into the tNU group
+#      (`@mira, o @tigrao gostaria que <frase>`) so Mira sees it.
+# Non-owner queries return an empty result list — the bot stays silent.
+
+# Telegram caps inline query length at 256 characters.
+_INLINE_MAX_QUERY_LEN = 256
+
+
+def _build_user_confirmation(query: str) -> str:
+    return (
+        f"✅ @nuapp salvou com sucesso o seu pedido: '{query}'"
+    )
+
+
+def _build_group_request(query: str) -> str:
+    return (
+        f"@mira, o @{OWNER_USERNAME} gostaria que {query}"
+    )
+
+
+async def handle_inline_query(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> None:
+    """Owner-only inline mode. Returns one ready-to-send confirmation
+    article. The real relay to the tNU group only happens when the owner
+    actually picks the article (see handle_chosen_inline_result)."""
+    iq = update.inline_query
+    if iq is None or iq.from_user is None:
+        return
+    if iq.from_user.id != OWNER_USER_ID:
+        # Stay silent for non-owners. is_personal=True so Telegram never
+        # caches this empty answer for a different user.
+        try:
+            await iq.answer(results=[], cache_time=1, is_personal=True)
+        except Exception:
+            logger.exception("Failed to send empty inline answer to non-owner")
+        return
+
+    query = (iq.query or "").strip()
+    if not query:
+        # Empty trigger ("@tNUappbot ") — nothing to save yet. Returning
+        # no results keeps Telegram's UI clean.
+        try:
+            await iq.answer(results=[], cache_time=1, is_personal=True)
+        except Exception:
+            logger.exception("Failed to send empty inline answer (empty query)")
+        return
+    if len(query) > _INLINE_MAX_QUERY_LEN:
+        query = query[:_INLINE_MAX_QUERY_LEN]
+
+    result = InlineQueryResultArticle(
+        id=f"save:{iq.id}",
+        title="Salvar pedido no tNU",
+        description=query[:120],
+        input_message_content=InputTextMessageContent(
+            message_text=_build_user_confirmation(query),
+        ),
+    )
+    try:
+        await iq.answer(
+            results=[result],
+            cache_time=0,
+            is_personal=True,
+        )
+    except Exception:
+        logger.exception("Failed to answer inline query")
+
+
+async def handle_chosen_inline_result(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> None:
+    """Owner picked the inline article — relay the request to the tNU
+    group so Mira sees it. Re-checks the owner id defensively in case
+    Telegram ever delivers a stale/forged update."""
+    cir = update.chosen_inline_result
+    if cir is None or cir.from_user is None:
+        return
+    if cir.from_user.id != OWNER_USER_ID:
+        logger.warning(
+            "Ignored chosen_inline_result from non-owner user_id=%s",
+            cir.from_user.id,
+        )
+        return
+    if GROUP_CHAT_ID is None:
+        logger.warning(
+            "Inline pick by owner but GROUP_CHAT_ID not set — cannot relay."
+        )
+        return
+
+    query = (cir.query or "").strip()
+    if not query:
+        return
+    if len(query) > _INLINE_MAX_QUERY_LEN:
+        query = query[:_INLINE_MAX_QUERY_LEN]
+
+    text = _build_group_request(query)
+    try:
+        await context.bot.send_message(chat_id=GROUP_CHAT_ID, text=text)
+    except Exception:
+        logger.exception(
+            "Failed to relay inline request to tNU group chat_id=%s",
+            GROUP_CHAT_ID,
+        )
+        return
+    logger.info(
+        "Relayed inline request to tNU group: %r", query[:80]
+    )
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 def main() -> None:
@@ -471,6 +601,13 @@ def main() -> None:
 
     # /id works anywhere — DM, group, business chat.
     application.add_handler(CommandHandler("id", cmd_id))
+
+    # Inline mode (owner-only). Owner types `@tNUappbot <frase>`
+    # anywhere; we relay the request into the tNU group when picked.
+    application.add_handler(InlineQueryHandler(handle_inline_query))
+    application.add_handler(
+        ChosenInlineResultHandler(handle_chosen_inline_result)
+    )
 
     # Diagnostic: log every incoming update (does not block any handler).
     application.add_handler(TypeHandler(Update, log_every_update), group=-2)
@@ -516,7 +653,9 @@ def main() -> None:
         allowed_updates=[
             Update.BUSINESS_CONNECTION,
             Update.BUSINESS_MESSAGE,
+            Update.CHOSEN_INLINE_RESULT,
             Update.EDITED_BUSINESS_MESSAGE,
+            Update.INLINE_QUERY,
             Update.MESSAGE,
         ]
     )
