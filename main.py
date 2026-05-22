@@ -295,18 +295,16 @@ async def handle_group_message(
     if msg.from_user.id == context.bot.id:
         return
 
-    reply_to = msg.reply_to_message
-    if reply_to is None:
-        return
-
     from_user = msg.from_user
+    sender_is_bot = from_user.is_bot
+    reply_to = msg.reply_to_message
     logger.info(
-        "Group reply id=%s from=%s(@%s) reply_to_id=%s reply_to_from=%s text=%r",
+        "Group msg id=%s from=%s(@%s,bot=%s) reply_to_id=%s text=%r",
         msg.message_id,
         from_user.id,
         from_user.username,
-        reply_to.message_id,
-        reply_to.from_user.id if reply_to.from_user else None,
+        sender_is_bot,
+        reply_to.message_id if reply_to else None,
         (msg.text or msg.caption or "")[:80],
     )
 
@@ -315,43 +313,44 @@ async def handle_group_message(
     text_to_send: str | None = None
     source_label: str
 
-    candidate = _lookup_forward(reply_to.message_id)
-    if candidate is not None:
+    if reply_to is not None and _lookup_forward(reply_to.message_id) is not None:
         # Path A: reply to one of our relay messages.
+        candidate = _lookup_forward(reply_to.message_id)
+        assert candidate is not None
         if candidate.get("answered"):
             logger.info("Forward %s already answered — ignoring.", reply_to.message_id)
             return
         target_group_msg_id = reply_to.message_id
         entry = candidate
         text_to_send = msg.text or msg.caption
-        source_label = "você"
+        source_label = f"IA ({from_user.username or 'bot'})" if sender_is_bot else "você"
         if not text_to_send:
-            await msg.reply_text("❌ Por enquanto só dá pra responder com texto.")
+            if not sender_is_bot:
+                await msg.reply_text("❌ Por enquanto só dá pra responder com texto.")
             return
-    elif (
-        reply_to.from_user is not None
-        and reply_to.from_user.is_bot
-        and reply_to.from_user.id != context.bot.id
-    ):
-        # Path B: reply to Mira's message → forward Mira's text.
+    elif sender_is_bot:
+        # Path B: Mira (or any other bot) posted in the group. Route her text
+        # to the oldest still-unanswered forward. Works whether or not she
+        # used Telegram's "reply" feature. Requires Bot-to-Bot Communication
+        # Mode enabled on our bot in BotFather (plus admin rights or Group
+        # Privacy OFF) so Telegram actually delivers her messages to us.
         pending = _oldest_unanswered_forward()
         if pending is None:
-            logger.info("Reply to Mira but no pending forward — ignoring.")
-            await msg.reply_text("⚠️ Não tenho mensagem de cliente pendente pra responder.")
+            logger.info("Bot %s posted in group but no pending forward — ignoring.", from_user.username)
             return
         target_group_msg_id, entry = pending
-        text_to_send = reply_to.text or reply_to.caption
-        source_label = f"IA ({reply_to.from_user.username or 'bot'})"
+        text_to_send = msg.text or msg.caption
+        source_label = f"IA ({from_user.username or 'bot'})"
         if not text_to_send:
-            await msg.reply_text("❌ A mensagem da IA não tem texto pra encaminhar.")
+            logger.info("Bot %s posted without text — ignoring.", from_user.username)
             return
         logger.info(
-            "Approving bot %s's text for oldest pending forward %s.",
-            reply_to.from_user.username or reply_to.from_user.id,
+            "Auto-forwarding bot %s's text for oldest pending forward %s.",
+            from_user.username or from_user.id,
             target_group_msg_id,
         )
     else:
-        logger.info("Reply target %s not actionable — ignoring.", reply_to.message_id)
+        # User wrote in the group but not as a reply to our relay — ignore.
         return
 
     assert entry is not None and target_group_msg_id is not None and text_to_send
