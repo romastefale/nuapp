@@ -514,7 +514,7 @@ def _html_escape(text: str) -> str:
 # ---------------------------------------------------------------------------
 # Inline mode (owner-only) — prefix-based commands
 # ---------------------------------------------------------------------------
-# Two commands, both owner-only:
+# Owner-only inline mode. Two commands:
 #
 #   !save <frase>   →  Posts in the current chat:
 #                       "✅ @nuapp salvou com sucesso o seu pedido: '<frase>'"
@@ -522,16 +522,17 @@ def _html_escape(text: str) -> str:
 #                       "@mira, o @tigrao gostaria que <frase>"
 #
 #   !srch <termo>   →  Posts in the current chat:
-#                       "⏳ pesquisando: '<termo>'..."
+#                       "⏳ nuAPP pesquisando: '<termo>'..."
 #                      And relays to the tNU group:
 #                       "@mira, pesquise sobre \"<termo>\""
-#                      When Mira mentions the bot in the tNU group (via a
-#                      Telegram reply to that relay message), we EDIT the
-#                      inline message in-place with her answer — turning the
-#                      "pesquisando..." into the actual result.
+#                      When Mira replies (Telegram-reply) to that relay
+#                      message in the tNU group, we EDIT the inline
+#                      message in place with her answer.
 #
-# Any other prefix / no prefix returns no results, keeping the bot silent.
-# Non-owner queries always return no results.
+# DEFAULT BEHAVIOR: if no recognised prefix is present, the entire query
+# is treated as !srch — so `@tNUappbot quem inventou o iglu?` works as a
+# search. Empty queries and non-owner queries return no results.
+# User-facing strings never mention Mira (branded as "nuAPP" instead).
 
 _INLINE_MAX_QUERY_LEN = 256
 _CMD_SAVE = "!save"
@@ -541,18 +542,23 @@ _CMD_SRCH = "!srch"
 def _parse_inline_command(raw: str) -> tuple[str | None, str]:
     """Return (cmd, body) — cmd is "!save", "!srch", or None.
 
-    The prefix is recognised case-insensitively and must be the very first
-    token, followed by at least one whitespace character. Body is trimmed
-    and truncated to the Telegram inline-query limit.
+    - Empty input → (None, "").
+    - First token is "!save" or "!srch" → that command + the rest as body.
+    - Anything else → defaults to "!srch" with the FULL text as body, so
+      typing `@tNUappbot quem inventou o iglu?` is treated as a search.
+
+    Body is trimmed and truncated to the Telegram inline-query limit.
     """
     text = (raw or "").strip()
     if not text:
         return None, ""
     head, _, rest = text.partition(" ")
     cmd = head.lower()
-    if cmd not in (_CMD_SAVE, _CMD_SRCH):
-        return None, ""
-    body = rest.strip()
+    if cmd in (_CMD_SAVE, _CMD_SRCH):
+        body = rest.strip()
+    else:
+        cmd = _CMD_SRCH
+        body = text  # entire query — no prefix to strip
     if len(body) > _INLINE_MAX_QUERY_LEN:
         body = body[:_INLINE_MAX_QUERY_LEN]
     return cmd, body
@@ -567,7 +573,7 @@ def _build_save_group_request(body: str) -> str:
 
 
 def _build_srch_placeholder(body: str) -> str:
-    return f"⏳ pesquisando: '{body}'..."
+    return f"⏳ nuAPP pesquisando: '{body}'..."
 
 
 def _build_srch_group_request(body: str) -> str:
@@ -579,7 +585,7 @@ def _build_srch_group_request(body: str) -> str:
 # need that id to edit the !srch message later when Mira answers.
 def _inline_pending_markup() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
-        [[InlineKeyboardButton(text="⏳ aguardando Mira", callback_data="noop")]]
+        [[InlineKeyboardButton(text="⏳ aguardando nuAPP", callback_data="noop")]]
     )
 
 
@@ -619,7 +625,7 @@ async def handle_inline_query(
     else:  # _CMD_SRCH
         result = InlineQueryResultArticle(
             id=f"srch:{iq.id}",
-            title="Pesquisar com Mira",
+            title="Pesquise com nuAPP",
             description=body[:120],
             input_message_content=InputTextMessageContent(
                 message_text=_build_srch_placeholder(body),
