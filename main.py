@@ -241,15 +241,20 @@ async def handle_business_message(
 async def handle_group_message(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> None:
-    """Route group messages back to the customer.
+    """Route user replies in the group back to the customer.
 
-    - If the message is a Telegram reply to one of our forwarded messages,
-      use that forward as the target (works for both Mira and the user).
-    - If the message is NOT a reply but comes from a bot (i.e. Mira posted
-      a normal message after seeing the trigger), fall back to the oldest
-      still-unanswered forward. This is necessary because some bots do not
-      use Telegram's reply feature when answering.
-    First responder wins per forward.
+    Two supported paths (user must use Telegram's *reply* feature):
+
+    1. Reply to our own relayed message  →  send the user's typed text
+       to the corresponding customer (manual / edited reply).
+    2. Reply to Mira's (or any other bot's) message in the group  →
+       send THAT bot's text to the customer, mapped to the oldest still
+       unanswered forward. The user's own text in this reply is ignored
+       (so a "ok" / "+" / "vai" is enough to confirm).
+
+    Note: the Bot API never delivers messages authored by other bots
+    directly to our bot, so we can't intercept Mira's reply on her own
+    — the user has to "approve" it with a reply.
     """
     msg = update.message
     if msg is None or msg.from_user is None:
@@ -259,68 +264,76 @@ async def handle_group_message(
     if msg.from_user.id == context.bot.id:
         return
 
+    reply_to = msg.reply_to_message
+    if reply_to is None:
+        return
+
     from_user = msg.from_user
-    sender_is_bot = from_user.is_bot
     logger.info(
-        "Group msg id=%s from=%s(@%s,bot=%s) reply_to=%s text=%r",
+        "Group reply id=%s from=%s(@%s) reply_to_id=%s reply_to_from=%s text=%r",
         msg.message_id,
         from_user.id,
         from_user.username,
-        sender_is_bot,
-        msg.reply_to_message.message_id if msg.reply_to_message else None,
+        reply_to.message_id,
+        reply_to.from_user.id if reply_to.from_user else None,
         (msg.text or msg.caption or "")[:80],
     )
 
     target_group_msg_id: int | None = None
     entry: dict[str, Any] | None = None
+    text_to_send: str | None = None
+    source_label: str
 
-    reply_to = msg.reply_to_message
-    if reply_to is not None:
-        candidate = _lookup_forward(reply_to.message_id)
-        if candidate is None:
-            logger.info(
-                "Reply target %s not in forwards table — ignoring.", reply_to.message_id
-            )
-            return
+    candidate = _lookup_forward(reply_to.message_id)
+    if candidate is not None:
+        # Path A: reply to one of our relay messages.
         if candidate.get("answered"):
-            logger.info("Forward %s already answered — ignoring extra.", reply_to.message_id)
+            logger.info("Forward %s already answered — ignoring.", reply_to.message_id)
             return
         target_group_msg_id = reply_to.message_id
         entry = candidate
-    elif sender_is_bot:
-        # Non-reply bot message: assume it's Mira answering the oldest pending one.
+        text_to_send = msg.text or msg.caption
+        source_label = "você"
+        if not text_to_send:
+            await msg.reply_text("❌ Por enquanto só dá pra responder com texto.")
+            return
+    elif (
+        reply_to.from_user is not None
+        and reply_to.from_user.is_bot
+        and reply_to.from_user.id != context.bot.id
+    ):
+        # Path B: reply to Mira's message → forward Mira's text.
         pending = _oldest_unanswered_forward()
         if pending is None:
-            logger.info("Bot posted in group but no pending forward to attach to — ignoring.")
+            logger.info("Reply to Mira but no pending forward — ignoring.")
+            await msg.reply_text("⚠️ Não tenho mensagem de cliente pendente pra responder.")
             return
         target_group_msg_id, entry = pending
+        text_to_send = reply_to.text or reply_to.caption
+        source_label = f"IA ({reply_to.from_user.username or 'bot'})"
+        if not text_to_send:
+            await msg.reply_text("❌ A mensagem da IA não tem texto pra encaminhar.")
+            return
         logger.info(
-            "Bot %s posted without reply_to; attaching to oldest pending forward %s.",
-            from_user.username or from_user.id,
+            "Approving bot %s's text for oldest pending forward %s.",
+            reply_to.from_user.username or reply_to.from_user.id,
             target_group_msg_id,
         )
     else:
-        # User wrote in the group without using "reply" — nothing to route.
+        logger.info("Reply target %s not actionable — ignoring.", reply_to.message_id)
         return
 
-    text = msg.text or msg.caption
-    if not text:
-        if not sender_is_bot:
-            await msg.reply_text("❌ Por enquanto só dá pra responder com texto.")
-        return
-
-    assert entry is not None and target_group_msg_id is not None
+    assert entry is not None and target_group_msg_id is not None and text_to_send
 
     try:
         await context.bot.send_message(
             chat_id=entry["chat_id"],
-            text=text,
+            text=text_to_send,
             business_connection_id=entry["business_connection_id"],
         )
     except Exception as exc:  # noqa: BLE001
         logger.exception("Failed to deliver reply to customer: %s", exc)
-        if not sender_is_bot:
-            await msg.reply_text(f"❌ Falha ao enviar: {exc}")
+        await msg.reply_text(f"❌ Falha ao enviar: {exc}")
         return
 
     entry["answered"] = True
@@ -329,13 +342,12 @@ async def handle_group_message(
         "Delivered reply to customer chat=%s (forward %s, source=%s)",
         entry["chat_id"],
         target_group_msg_id,
-        "IA" if sender_is_bot else "user",
+        source_label,
     )
 
-    source = "IA" if sender_is_bot else "você"
     try:
         await msg.reply_text(
-            f"✅ Enviado para {entry['customer_name']} (por {source})"
+            f"✅ Enviado para {entry['customer_name']} (por {source_label})"
         )
     except Exception:
         logger.exception("Failed to post confirmation in group")
