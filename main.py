@@ -98,10 +98,25 @@ MIRA_PROMPT = os.environ.get(
 MIRA_USERNAME = os.environ.get("MIRA_USERNAME", "mira").lstrip("@").strip() or "mira"
 
 
+# Prompts específicos por @username de bot destino. Quando o
+# MIRA_USERNAME bate com uma chave aqui, o relay usa esse texto no
+# lugar do MIRA_PROMPT longo (útil pra bots que precisam de uma
+# mensagem-gatilho específica em vez do prompt da Mira).
+MIRA_PROMPT_OVERRIDES: dict[str, str] = {
+    "chat_gpt_unlim_bot": "Oi! Tudo bem? 😊 \n\nSe precisar de ajuda com a configuração do bot de antes, ou se tiver qualquer outra dúvida, é só falar! Como posso te ajudar agora?",
+}
+
+
 def _resolved_mira_prompt() -> str:
-    """Substitui o primeiro @word do MIRA_PROMPT por @MIRA_USERNAME,
-    preservando pontuação/vírgula. Se o prompt não começar com @, retorna
-    inalterado."""
+    """Resolve o texto do prompt a enviar no relay.
+    1) Se MIRA_USERNAME tem override em MIRA_PROMPT_OVERRIDES, usa esse
+       texto prefixado por @USERNAME (gatilho específico do bot).
+    2) Senão, substitui o primeiro @word do MIRA_PROMPT por @MIRA_USERNAME,
+       preservando pontuação/vírgula.
+    3) Se o prompt não começar com @, retorna inalterado."""
+    override = MIRA_PROMPT_OVERRIDES.get(MIRA_USERNAME)
+    if override is not None:
+        return f"@{MIRA_USERNAME} {override}"
     text = MIRA_PROMPT
     if not text.startswith("@"):
         return text
