@@ -2,11 +2,29 @@
 
 Receives messages addressed to a connected Telegram Business account and
 relays them into a private group where the user can collaborate with the
-Mira AI bot. Whatever the user replies (in-group, as a Telegram reply to
-the relayed message) is then sent back to the original customer through
-the business connection.
+Mira AI bot.
+
+Two delivery paths back to the customer:
+
+1. **Bot API path (PTB)** — when the user (or any bot) sends a Telegram
+   reply to one of our relay messages, the Bot API delivers that update
+   to us. ``handle_group_message`` forwards the right text back to the
+   customer via ``business_connection_id``.
+
+2. **MTProto path (Telethon)** — the Bot API never delivers messages
+   authored by other bots that simply post in a group (Bot-to-Bot mode is
+   opaque and unreliable). To capture Mira's replies deterministically we
+   run a parallel Telethon listener under the user's own account, which
+   sees every group message just like a normal client. When Mira posts a
+   reply to one of our relays the listener forwards her text back to the
+   customer through the bot's business connection.
+
+The MTProto listener is optional — if ``TELEGRAM_API_ID``,
+``TELEGRAM_API_HASH`` or ``TELEGRAM_SESSION_STRING`` is missing, the bot
+runs in Bot-API-only mode without crashing.
 """
 
+import asyncio
 import json
 import logging
 import os
@@ -16,6 +34,7 @@ from typing import Any
 
 from telegram import Update
 from telegram.ext import (
+    Application,
     ApplicationBuilder,
     CommandHandler,
     ContextTypes,
@@ -58,6 +77,13 @@ def _parse_int(value: str | None) -> int | None:
 # Private group where the user + Mira AI bot live. Optional at boot — the
 # bot can run without it and the /id command helps you discover the value.
 GROUP_CHAT_ID: int | None = _parse_int(os.environ.get("GROUP_CHAT_ID"))
+
+# MTProto listener credentials (optional). When set, a parallel Telethon
+# client logs in with the user's own account and intercepts Mira's replies
+# in the group — bypassing all Bot-API delivery restrictions.
+MTPROTO_API_ID: int | None = _parse_int(os.environ.get("TELEGRAM_API_ID"))
+MTPROTO_API_HASH: str | None = os.environ.get("TELEGRAM_API_HASH") or None
+MTPROTO_SESSION_STRING: str | None = os.environ.get("TELEGRAM_SESSION_STRING") or None
 
 # Prefix that wakes the Mira AI bot in the group. The relay message starts
 # with this so Mira automatically answers with a suggested reply. The bot
@@ -120,7 +146,7 @@ def _oldest_unanswered_forward() -> tuple[int, dict[str, Any]] | None:
 
 
 # ---------------------------------------------------------------------------
-# Handlers
+# Handlers — Bot API (python-telegram-bot)
 # ---------------------------------------------------------------------------
 async def cmd_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Reply with the current chat's ID. Useful for discovering GROUP_CHAT_ID."""
@@ -272,20 +298,11 @@ async def handle_business_message(
 async def handle_group_message(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> None:
-    """Route user replies in the group back to the customer.
+    """Route in-group replies back to the customer via Bot API.
 
-    Two supported paths (user must use Telegram's *reply* feature):
-
-    1. Reply to our own relayed message  →  send the user's typed text
-       to the corresponding customer (manual / edited reply).
-    2. Reply to Mira's (or any other bot's) message in the group  →
-       send THAT bot's text to the customer, mapped to the oldest still
-       unanswered forward. The user's own text in this reply is ignored
-       (so a "ok" / "+" / "vai" is enough to confirm).
-
-    Note: the Bot API never delivers messages authored by other bots
-    directly to our bot, so we can't intercept Mira's reply on her own
-    — the user has to "approve" it with a reply.
+    Triggered when the user (a human) replies to one of our relay messages
+    inside the configured group. The MTProto listener handles Mira-bot
+    replies separately.
     """
     msg = update.message
     if msg is None or msg.from_user is None:
@@ -295,65 +312,20 @@ async def handle_group_message(
     if msg.from_user.id == context.bot.id:
         return
 
-    from_user = msg.from_user
-    sender_is_bot = from_user.is_bot
     reply_to = msg.reply_to_message
-    logger.info(
-        "Group msg id=%s from=%s(@%s,bot=%s) reply_to_id=%s text=%r",
-        msg.message_id,
-        from_user.id,
-        from_user.username,
-        sender_is_bot,
-        reply_to.message_id if reply_to else None,
-        (msg.text or msg.caption or "")[:80],
-    )
-
-    target_group_msg_id: int | None = None
-    entry: dict[str, Any] | None = None
-    text_to_send: str | None = None
-    source_label: str
-
-    if reply_to is not None and _lookup_forward(reply_to.message_id) is not None:
-        # Path A: reply to one of our relay messages.
-        candidate = _lookup_forward(reply_to.message_id)
-        assert candidate is not None
-        if candidate.get("answered"):
-            logger.info("Forward %s already answered — ignoring.", reply_to.message_id)
-            return
-        target_group_msg_id = reply_to.message_id
-        entry = candidate
-        text_to_send = msg.text or msg.caption
-        source_label = "IA" if sender_is_bot else "você"
-        if not text_to_send:
-            if not sender_is_bot:
-                await msg.reply_text("❌ Por enquanto só dá pra responder com texto.")
-            return
-    elif sender_is_bot:
-        # Path B: Mira (or any other bot) posted in the group. Route her text
-        # to the oldest still-unanswered forward. Works whether or not she
-        # used Telegram's "reply" feature. Requires Bot-to-Bot Communication
-        # Mode enabled on our bot in BotFather (plus admin rights or Group
-        # Privacy OFF) so Telegram actually delivers her messages to us.
-        pending = _oldest_unanswered_forward()
-        if pending is None:
-            logger.info("Bot %s posted in group but no pending forward — ignoring.", from_user.username)
-            return
-        target_group_msg_id, entry = pending
-        text_to_send = msg.text or msg.caption
-        source_label = "IA"
-        if not text_to_send:
-            logger.info("Bot %s posted without text — ignoring.", from_user.username)
-            return
-        logger.info(
-            "Auto-forwarding bot %s's text for oldest pending forward %s.",
-            from_user.username or from_user.id,
-            target_group_msg_id,
-        )
-    else:
-        # User wrote in the group but not as a reply to our relay — ignore.
+    if reply_to is None:
+        return
+    entry = _lookup_forward(reply_to.message_id)
+    if entry is None or entry.get("answered"):
         return
 
-    assert entry is not None and target_group_msg_id is not None and text_to_send
+    text_to_send = msg.text or msg.caption
+    if not text_to_send:
+        if not msg.from_user.is_bot:
+            await msg.reply_text("❌ Por enquanto só dá pra responder com texto.")
+        return
+
+    source_label = "IA" if msg.from_user.is_bot else "você"
 
     try:
         await context.bot.send_message(
@@ -367,11 +339,11 @@ async def handle_group_message(
         return
 
     entry["answered"] = True
-    _remember_forward(target_group_msg_id, entry)
+    _remember_forward(reply_to.message_id, entry)
     logger.info(
         "Delivered reply to customer chat=%s (forward %s, source=%s)",
         entry["chat_id"],
-        target_group_msg_id,
+        reply_to.message_id,
         source_label,
     )
 
@@ -392,10 +364,111 @@ def _html_escape(text: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# MTProto listener (Telethon) — sees Mira's replies in the group
+# ---------------------------------------------------------------------------
+def _mtproto_enabled() -> bool:
+    return bool(MTPROTO_API_ID and MTPROTO_API_HASH and MTPROTO_SESSION_STRING)
+
+
+async def _start_mtproto_listener(application: Application):
+    """Start a Telethon client that watches GROUP_CHAT_ID for Mira's replies.
+
+    Returns the running client, or None if MTProto is not configured.
+    """
+    if not _mtproto_enabled():
+        logger.warning(
+            "MTProto listener disabled — set TELEGRAM_API_ID, TELEGRAM_API_HASH "
+            "and TELEGRAM_SESSION_STRING to enable Mira reply interception."
+        )
+        return None
+    if GROUP_CHAT_ID is None:
+        logger.warning("MTProto listener disabled — GROUP_CHAT_ID not set.")
+        return None
+
+    from telethon import TelegramClient, events
+    from telethon.sessions import StringSession
+
+    client = TelegramClient(
+        StringSession(MTPROTO_SESSION_STRING), MTPROTO_API_ID, MTPROTO_API_HASH
+    )
+    bot_id = (await application.bot.get_me()).id
+
+    @client.on(events.NewMessage(chats=GROUP_CHAT_ID))
+    async def _on_group_message(event):  # noqa: ANN001
+        try:
+            msg = event.message
+            if not msg.reply_to or not msg.reply_to.reply_to_msg_id:
+                return  # Mira always uses Telegram-reply to our relay
+            relay_id = msg.reply_to.reply_to_msg_id
+            entry = _lookup_forward(relay_id)
+            if entry is None or entry.get("answered"):
+                return
+            sender = await event.get_sender()
+            if sender is None:
+                return
+            sender_is_bot = bool(getattr(sender, "bot", False))
+            sender_id = getattr(sender, "id", None)
+            if not sender_is_bot:
+                return  # human replies are handled by the Bot API path
+            if sender_id == bot_id:
+                return  # never echo ourselves
+            text = msg.text or msg.message
+            if not text:
+                return
+            logger.info(
+                "MTProto: bot %s replied to relay %s — forwarding to customer",
+                sender_id,
+                relay_id,
+            )
+            try:
+                await application.bot.send_message(
+                    chat_id=entry["chat_id"],
+                    text=text,
+                    business_connection_id=entry["business_connection_id"],
+                )
+            except Exception:
+                logger.exception("MTProto: failed to forward Mira's reply")
+                return
+            entry["answered"] = True
+            _remember_forward(relay_id, entry)
+            try:
+                await application.bot.send_message(
+                    chat_id=GROUP_CHAT_ID,
+                    text=f"✅ Enviado para {entry['customer_name']} (por IA)",
+                    reply_to_message_id=relay_id,
+                )
+            except Exception:
+                logger.exception("MTProto: failed to post confirmation in group")
+        except Exception:
+            logger.exception("MTProto handler crashed")
+
+    await client.start()
+    me = await client.get_me()
+    logger.info(
+        "MTProto listener active as %s (id=%s) for group %s",
+        getattr(me, "username", None) or getattr(me, "first_name", "?"),
+        getattr(me, "id", "?"),
+        GROUP_CHAT_ID,
+    )
+    return client
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
-def main() -> None:
-    application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
+async def _post_init(application: Application) -> None:
+    """Log bot identity flags on startup so we can verify BotFather settings."""
+    try:
+        me = await application.bot.get_me()
+        logger.info("Bot getMe: %s", me.to_dict())
+    except Exception:
+        logger.exception("post_init getMe failed")
+
+
+def _build_application() -> Application:
+    application = (
+        ApplicationBuilder().token(TELEGRAM_TOKEN).post_init(_post_init).build()
+    )
 
     # /id works anywhere — DM, group, business chat.
     application.add_handler(CommandHandler("id", cmd_id))
@@ -404,25 +477,24 @@ def main() -> None:
     application.add_handler(TypeHandler(Update, log_every_update), group=-2)
 
     # Learn the business account owner's id from connection updates.
-    # Placed in its own dispatch group so it doesn't swallow other handlers.
     application.add_handler(TypeHandler(Update, on_business_connection), group=-1)
 
-    # Group 0: catch business messages (sent from a counterparty inside a
-    # business chat) and relay them to the configured group.
+    # Group 0: catch business messages (from a customer in a business chat).
     application.add_handler(
         MessageHandler(filters.UpdateType.BUSINESS_MESSAGE, handle_business_message),
         group=0,
     )
 
-    # Group 1 (separate dispatch group): handle messages posted inside the
-    # configured private group so they get routed back to the customer.
-    # We do NOT filter by REPLY here because some bots (e.g. Mira) answer
-    # with a plain message instead of using Telegram's reply feature.
+    # Group 1: handle in-group user replies (humans only).
     application.add_handler(
-        MessageHandler(filters.ChatType.GROUPS, handle_group_message),
+        MessageHandler(filters.ChatType.GROUPS & filters.REPLY, handle_group_message),
         group=1,
     )
+    return application
 
+
+async def _amain() -> None:
+    application = _build_application()
     logger.info("Starting Secretary Bot polling loop...")
     if GROUP_CHAT_ID is None:
         logger.warning(
@@ -432,7 +504,44 @@ def main() -> None:
     else:
         logger.info("Relaying business messages to group %s", GROUP_CHAT_ID)
 
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
+    await application.initialize()
+    await application.start()
+    await application.updater.start_polling(allowed_updates=Update.ALL_TYPES)
+
+    mtproto_client = await _start_mtproto_listener(application)
+
+    try:
+        # Run until SIGINT/SIGTERM cancels us.
+        if mtproto_client is not None:
+            await mtproto_client.run_until_disconnected()
+        else:
+            await asyncio.Event().wait()
+    finally:
+        logger.info("Shutting down...")
+        if mtproto_client is not None:
+            try:
+                await mtproto_client.disconnect()
+            except Exception:
+                logger.exception("Error disconnecting MTProto client")
+        try:
+            await application.updater.stop()
+        except Exception:
+            logger.exception("Error stopping updater")
+        try:
+            await application.stop()
+        except Exception:
+            logger.exception("Error stopping application")
+        try:
+            await application.shutdown()
+        except Exception:
+            logger.exception("Error during application shutdown")
+
+
+def main() -> None:
+    try:
+        asyncio.run(_amain())
+    except (KeyboardInterrupt, SystemExit):
+        pass
 
 
 if __name__ == "__main__":
