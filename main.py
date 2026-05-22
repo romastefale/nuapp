@@ -72,12 +72,12 @@ GROUP_CHAT_ID: int | None = _parse_int(os.environ.get("GROUP_CHAT_ID"))
 # then forwards Mira's reply back to the customer automatically.
 MIRA_PROMPT = os.environ.get(
     "MIRA_PROMPT",
-    "Mira, responda essa mensagem em até 1 frase curta, casual e neutra, "
-    "em português, no mesmo tom de quem escreveu. Não peça desculpas, "
-    "não diga que demorou, não use saudações longas, não comente o "
-    "assunto antigo. Exemplos do estilo desejado: \"oi\", \"oi, tudo bem?\", "
-    "\"tá bom\", \"manda aí\". Escreva apenas a resposta final, sem aspas "
-    "e sem explicação.",
+    "Mira, responda essa mensagem com apenas 1 frase curta em português, "
+    "natural e direta, mantendo o mesmo tom de quem escreveu. Sem "
+    "formalidade, exageros ou resposta robótica. Não peça desculpas, "
+    "não fale sobre demora. Exemplos: \"oi\", \"tranquilo\", \"manda aí\", "
+    "\"tá certo\". Escreva apenas a resposta final, sem aspas e sem "
+    "explicação.",
 )
 
 # ---------------------------------------------------------------------------
