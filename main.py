@@ -106,6 +106,32 @@ MIRA_PROMPT_OVERRIDES: dict[str, str] = {
     "chat_gpt_unlim_bot": "Oi! Tudo bem? 😊 \n\nSe precisar de ajuda com a configuração do bot de antes, ou se tiver qualquer outra dúvida, é só falar! Como posso te ajudar agora?",
 }
 
+# Bots cujo gatilho exige reply à mensagem fixada do grupo (senão
+# não respondem). O bot busca o pinned em runtime e cacheia.
+_REPLY_TO_PINNED_BOTS: set[str] = {"chat_gpt_unlim_bot"}
+_PINNED_CACHE: dict[int, int] = {}  # chat_id -> pinned message_id
+
+
+async def _get_group_pinned_msg_id(context) -> int | None:
+    """Retorna o message_id da mensagem fixada no GROUP_CHAT_ID. Cacheia
+    em memória; em caso de erro/ausência, retorna None."""
+    if GROUP_CHAT_ID is None:
+        return None
+    cached = _PINNED_CACHE.get(GROUP_CHAT_ID)
+    if cached is not None:
+        return cached
+    try:
+        chat = await context.bot.get_chat(GROUP_CHAT_ID)
+        pinned = getattr(chat, "pinned_message", None)
+        if pinned is not None:
+            _PINNED_CACHE[GROUP_CHAT_ID] = pinned.message_id
+            return pinned.message_id
+    except Exception:
+        logger.exception("Failed to fetch pinned message for group %s", GROUP_CHAT_ID)
+    return None
+
+
+
 
 def _resolved_mira_prompt() -> str:
     """Resolve o texto do prompt a enviar no relay.
@@ -451,6 +477,10 @@ async def _flush_album(album_key: str, context: ContextTypes.DEFAULT_TYPE) -> No
     }
     if anchor_id is not None:
         send_kwargs["reply_to_message_id"] = anchor_id
+    if MIRA_USERNAME in _REPLY_TO_PINNED_BOTS:
+        pinned = await _get_group_pinned_msg_id(context)
+        if pinned is not None:
+            send_kwargs["reply_to_message_id"] = pinned
     try:
         sent = await context.bot.send_message(**send_kwargs)
     except Exception:
@@ -565,6 +595,10 @@ async def handle_business_message(
     }
     if media_msg_id is not None:
         send_kwargs["reply_to_message_id"] = media_msg_id
+    if MIRA_USERNAME in _REPLY_TO_PINNED_BOTS:
+        pinned = await _get_group_pinned_msg_id(context)
+        if pinned is not None:
+            send_kwargs["reply_to_message_id"] = pinned
 
     try:
         sent = await context.bot.send_message(**send_kwargs)
