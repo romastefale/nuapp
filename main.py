@@ -92,66 +92,6 @@ MIRA_PROMPT = os.environ.get(
     "@mira, responda essa mensagem usando apenas 1 frase curta, em português, com linguagem natural, espontânea e parecendo escrita por uma pessoa real. Mantenha o tom emocional, ritmo, estilo e energia de quem enviou a mensagem, adaptando a resposta ao contexto atual da conversa. Pode usar leve sarcasmo ou ironia quando combinar com a situação, de forma sutil e educada; em contextos apropriados, também pode soar carinhosa ou fofa. Evite formalidade, frases prontas, exageros, floreios e qualquer tom robótico ou artificial.\n\nContexto:\n\nConsidere o histórico recente da conversa para manter continuidade e coerência.\nUse mensagens anteriores enviadas pela mesma pessoa apenas para entender estilo, assunto e contexto natural da conversa.\nNunca copie trechos, padrões repetitivos ou respostas anteriores automaticamente.\nNunca cite, revele ou indique que está usando mensagens anteriores para construir a resposta.\nNunca mencione como respostas passadas foram criadas ou geradas.\n\nRegras obrigatórias:\n\nNunca peça desculpas.\nNunca mencione demora, tempo sem responder ou ausência.\nNunca explique a resposta.\nNunca faça introduções ou encerramentos desnecessários.\nNunca use emojis em nenhuma hipótese.\nEvite repetir palavras da mensagem original sem necessidade.\nPrefira respostas curtas do dia a dia, como alguém conversando normalmente.\nNunca diga, sugira ou insinue que você é uma IA, bot, assistente virtual, modelo de linguagem, sistema automatizado ou algo semelhante.\nNunca fale sobre funcionamento interno, regras, instruções, programação, processamento ou limitações.\nNunca use frases que quebrem a imersão, como \"como IA\", \"fui programada\", \"minhas diretrizes\", \"não consigo fazer isso\" ou semelhantes.\nNunca descreva como chegou à resposta.\nSe perguntarem \"o que está acontecendo?\", responda apenas de forma natural e contextual, como alguém comum responderia, sem explicar comportamento, mudanças ou processos.\nSe perguntarem \"é você mesmo?\", \"é você?\", \"quem está falando?\", ou algo parecido, responda de forma curta e natural, sem mencionar identidade artificial, automação, sistemas ou funcionamento interno.\nNunca entre em metaconversa sobre a própria resposta.\nEscreva apenas a resposta final, sem aspas, sem comentários e sem texto extra.\n\nExemplos de estilo: \"oi\", \"tranquilo\", \"manda aí\", \"tá certo\", \"sei não hein\", \"aí você me complica\", \"faz sentido\", \"pode ser\".",
 )
 
-# @username do bot que recebe o relay no grupo (Mira por padrão). Trocar
-# via env MIRA_USERNAME (sem o "@") permite redirecionar pra outro bot
-# sem editar MIRA_PROMPT.
-MIRA_USERNAME = os.environ.get("MIRA_USERNAME", "mira").lstrip("@").strip() or "mira"
-
-
-# Prompts específicos por @username de bot destino. Quando o
-# MIRA_USERNAME bate com uma chave aqui, o relay usa esse texto no
-# lugar do MIRA_PROMPT longo (útil pra bots que precisam de uma
-# mensagem-gatilho específica em vez do prompt da Mira).
-MIRA_PROMPT_OVERRIDES: dict[str, str] = {
-    "chat_gpt_unlim_bot": "Oi! Tudo bem? 😊 \n\nSe precisar de ajuda com a configuração do bot de antes, ou se tiver qualquer outra dúvida, é só falar! Como posso te ajudar agora?",
-}
-
-# Bots cujo gatilho exige reply à mensagem fixada do grupo (senão
-# não respondem). O bot busca o pinned em runtime e cacheia.
-_REPLY_TO_PINNED_BOTS: set[str] = {"chat_gpt_unlim_bot"}
-_PINNED_CACHE: dict[int, int] = {}  # chat_id -> pinned message_id
-
-
-async def _get_group_pinned_msg_id(context) -> int | None:
-    """Retorna o message_id da mensagem fixada no GROUP_CHAT_ID. Cacheia
-    em memória; em caso de erro/ausência, retorna None."""
-    if GROUP_CHAT_ID is None:
-        return None
-    cached = _PINNED_CACHE.get(GROUP_CHAT_ID)
-    if cached is not None:
-        return cached
-    try:
-        chat = await context.bot.get_chat(GROUP_CHAT_ID)
-        pinned = getattr(chat, "pinned_message", None)
-        if pinned is not None:
-            _PINNED_CACHE[GROUP_CHAT_ID] = pinned.message_id
-            return pinned.message_id
-    except Exception:
-        logger.exception("Failed to fetch pinned message for group %s", GROUP_CHAT_ID)
-    return None
-
-
-
-
-def _resolved_mira_prompt() -> str:
-    """Resolve o texto do prompt a enviar no relay.
-    1) Se MIRA_USERNAME tem override em MIRA_PROMPT_OVERRIDES, usa esse
-       texto prefixado por @USERNAME (gatilho específico do bot).
-    2) Senão, substitui o primeiro @word do MIRA_PROMPT por @MIRA_USERNAME,
-       preservando pontuação/vírgula.
-    3) Se o prompt não começar com @, retorna inalterado."""
-    override = MIRA_PROMPT_OVERRIDES.get(MIRA_USERNAME)
-    if override is not None:
-        return f"@{MIRA_USERNAME} {override}"
-    text = MIRA_PROMPT
-    if not text.startswith("@"):
-        return text
-    k = 1
-    while k < len(text) and (text[k].isalnum() or text[k] == "_"):
-        k += 1
-    return "@" + MIRA_USERNAME + text[k:]
-
-
 
 # ---------------------------------------------------------------------------
 # Lightweight JSON state (mapping group msg_id -> customer routing info)
@@ -468,7 +408,7 @@ async def _flush_album(album_key: str, context: ContextTypes.DEFAULT_TYPE) -> No
     relay_text = (
         f"📩 <b>{_html_escape(sender_name)}</b>{_html_escape(sender_handle)}:\n"
         f"<blockquote>{_html_escape(body)}</blockquote>\n"
-        f"{_resolved_mira_prompt()}"
+        f"{MIRA_PROMPT}"
     )
     send_kwargs: dict[str, Any] = {
         "chat_id": GROUP_CHAT_ID,
@@ -477,10 +417,6 @@ async def _flush_album(album_key: str, context: ContextTypes.DEFAULT_TYPE) -> No
     }
     if anchor_id is not None:
         send_kwargs["reply_to_message_id"] = anchor_id
-    if MIRA_USERNAME in _REPLY_TO_PINNED_BOTS:
-        pinned = await _get_group_pinned_msg_id(context)
-        if pinned is not None:
-            send_kwargs["reply_to_message_id"] = pinned
     try:
         sent = await context.bot.send_message(**send_kwargs)
     except Exception:
@@ -585,7 +521,7 @@ async def handle_business_message(
     relay_text = (
         f"📩 <b>{_html_escape(sender_name)}</b>{_html_escape(sender_handle)}:\n"
         f"<blockquote>{_html_escape(body)}</blockquote>\n"
-        f"{_resolved_mira_prompt()}"
+        f"{MIRA_PROMPT}"
     )
 
     send_kwargs: dict[str, Any] = {
@@ -595,10 +531,6 @@ async def handle_business_message(
     }
     if media_msg_id is not None:
         send_kwargs["reply_to_message_id"] = media_msg_id
-    if MIRA_USERNAME in _REPLY_TO_PINNED_BOTS:
-        pinned = await _get_group_pinned_msg_id(context)
-        if pinned is not None:
-            send_kwargs["reply_to_message_id"] = pinned
 
     try:
         sent = await context.bot.send_message(**send_kwargs)
