@@ -122,6 +122,7 @@ def _save_state(state: dict[str, Any]) -> None:
 STATE: dict[str, Any] = _load_state()
 STATE.setdefault("aliases", {})
 STATE.setdefault("forwards", {})
+STATE.setdefault("disclosed_customers", [])
 
 
 def _remember_forward(group_msg_id: int, payload: dict[str, Any]) -> None:
@@ -169,6 +170,35 @@ def _oldest_unanswered_forward() -> tuple[int, dict[str, Any]] | None:
         return None
     pending.sort(key=lambda item: item[0])
     return pending[0]
+
+
+# Texto avisando que o atendimento é automatizado. Enviado apenas uma
+# vez por cliente, logo após a primeira resposta entregue.
+DISCLOSURE_TEXT = "Você está falando com o @nuapp"
+
+
+async def _maybe_send_disclosure(context, entry: dict[str, Any]) -> None:
+    """Envia o aviso de automação uma única vez por cliente, após a
+    primeira resposta entregue. Idempotente: se o customer_user_id já
+    consta em STATE['disclosed_customers'], não faz nada."""
+    cust_id = entry.get("customer_user_id")
+    if cust_id is None:
+        return
+    disclosed = STATE.setdefault("disclosed_customers", [])
+    if cust_id in disclosed:
+        return
+    try:
+        await context.bot.send_message(
+            chat_id=entry["chat_id"],
+            text=DISCLOSURE_TEXT,
+            business_connection_id=entry["business_connection_id"],
+        )
+    except Exception:
+        logger.exception("Failed to send disclosure to customer %s", cust_id)
+        return
+    disclosed.append(cust_id)
+    _save_state(STATE)
+    logger.info("Sent first-time automation disclosure to customer %s", cust_id)
 
 
 # ---------------------------------------------------------------------------
@@ -697,6 +727,7 @@ async def handle_group_message(
             return
         entry["answered"] = True
         _remember_forward(target_group_msg_id, entry)
+        await _maybe_send_disclosure(context, entry)
         logger.info(
             "Delivered (copy) reply to customer chat=%s (forward %s, source=IA)",
             entry["chat_id"],
@@ -760,6 +791,7 @@ async def handle_group_message(
 
     entry["answered"] = True
     _remember_forward(target_group_msg_id, entry)
+    await _maybe_send_disclosure(context, entry)
     logger.info(
         "Delivered reply to customer chat=%s (forward %s, source=%s)",
         entry["chat_id"],
