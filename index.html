@@ -323,6 +323,76 @@
     </div>
   </section>
 
+  <!-- ============ PARTE 3 ============ -->
+  <section class="part" style="margin-top:60px">
+    <div class="part-head">
+      <div class="part-num" style="background:#0e2440;color:var(--blue);border:1px solid #1f4a7a">3</div>
+      <h2>Moderação inteligente &amp; combinações de permissões</h2>
+      <span class="tag" style="background:#0e2440;color:var(--blue)">Mecanismos</span>
+    </div>
+    <p class="part-desc">Poucos poderes, usados de forma perspicaz. Linhas marcadas <span class="pill on" style="vertical-align:middle">confirmado</span> têm evidência direta nos dumps; o restante descreve a técnica que esses poderes habilitam na API do Telegram.</p>
+
+    <!-- combinações confirmadas nos dados -->
+    <div class="tablecard">
+      <div class="cap">Combinações que <b>aparecem nos dados</b> — como o operador amplifica 2 poderes simples</div>
+      <table>
+        <thead><tr><th>Mecanismo</th><th>Como funciona</th><th>Evidência</th></tr></thead>
+        <tbody>
+          <tr class="has"><td>🤖🤖 Redundância de bots</td><td>Dois bots com o mesmo <code style="font-family:var(--mono)">adminRights=24</code>. Removendo um, o outro segue moderando — não dá pra desarmar o grupo tirando só um.</td><td class="num"><span class="pill on">24 ×2 bots</span></td></tr>
+          <tr class="has"><td>🎚️ Trava em camadas</td><td>Restrição leve nos canais de transmissão e pesada no grupo onde o público interage. Dureza calibrada ao risco.</td><td class="num"><span class="pill on">2 perfis</span></td></tr>
+          <tr class="has"><td>🧨 Chave-mestra de silêncio</td><td>Reescrever o <code style="font-family:var(--mono)">defaultBannedRights</code> do grupo exige justamente <b>ban_users</b> — que o bot tem. Logo ele pode travar <b>todos</b> os membros de uma vez (lockdown).</td><td class="num"><span class="pill on">ban+91915648</span></td></tr>
+          <tr class="has"><td>⏳ Punição eterna</td><td>Restrições sem prazo: <code style="font-family:var(--mono)">untilDate=2147483647</code> (∞). Preferem banir definitivo a mutar temporário.</td><td class="num"><span class="pill on">∞ (19×)</span></td></tr>
+          <tr class="has"><td>🔁 Grupo turbinado</td><td>O grupo passou de legado → supergrupo, upgrade que <b>desbloqueia</b> todo o sistema de adminRights/bans.</td><td class="num"><span class="pill on">migration</span></td></tr>
+          <tr class="has"><td>⏲️ Auto-destruir</td><td>Posts com contador: <code style="font-family:var(--mono)">timeout=86400</code> + <code style="font-family:var(--mono)">countdownBeginTime</code> → somem em 24h sozinhos.</td><td class="num"><span class="pill on">86400</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- dois mecanismos inteligentes -->
+    <div class="div"></div>
+    <div class="grid g2">
+      <div class="card">
+        <h3>🔗 Delete inteligente — anti-divulgação</h3>
+        <p style="font-size:13.5px;color:var(--ink);margin:0 0 14px">O link nunca vive no texto cru: ele fica nas <b>entities</b>. O bot varre <code style="font-family:var(--mono)">Url / TextUrl / Mention</code> e, achando propaganda ou golpe, aplica <b>delete_messages</b> — e, em combo, <b>ban_users</b> no divulgador.</p>
+        <div class="kv"><span class="k">Camada 1 · passiva</span><span class="v">trava bloqueia link c/ preview + convite</span></div>
+        <div class="kv"><span class="k">Camada 2 · ativa</span><span class="v">delete apaga o que vazou (link cru, @menção)</span></div>
+        <div class="kv"><span class="k">Combo</span><span class="v">delete + ban + auto-destruir 24h</span></div>
+      </div>
+      <div class="card">
+        <h3>🛡️ Remover admin — o mecanismo</h3>
+        <p style="font-size:13.5px;color:var(--ink);margin:0 0 14px">Banir um admin exige <b>2 passos</b>: primeiro <b>rebaixar</b> (precisa de <code style="font-family:var(--mono)">add_admins</code>, bit 9 / valor 512), depois <b>banir</b> com ban_users. E só funciona contra admins que o próprio ator <b>promoveu</b> (cadeia de promoção).</p>
+        <div class="kv"><span class="k">add_admins (512)</span><span class="v"><span class="pill off">OFF no bot</span></span></div>
+        <div class="kv"><span class="k">Rebaixar admin?</span><span class="v">❌ impossível p/ este bot (24)</span></div>
+        <div class="kv"><span class="k">Quem consegue</span><span class="v">o dono, ou admin c/ add_admins na própria cadeia</span></div>
+      </div>
+    </div>
+
+    <!-- BAN GLOBAL -->
+    <div class="callout warn" style="margin-top:18px;background:#0e2440;border-color:#1f4a7a">
+      <div class="big-warn">
+        <span class="ic">🌐</span>
+        <div>
+          <h4 style="color:var(--blue)">"Ban global" (gban) — é real? atinge até o dono do grupo?</h4>
+          <p style="color:#bcd6f5">Sim, o ban global <b>existe</b> — mas <b>não é uma permissão nativa</b> do Telegram. É um mecanismo de <b>aplicação</b>: o bot mantém uma lista de IDs banidos e, em <b>todo grupo onde ele é admin com ban_users</b>, aplica o ban automaticamente. É <b>ban_users replicado em escala</b>, não um superpoder novo.</p>
+        </div>
+      </div>
+    </div>
+    <div class="tablecard" style="margin-top:14px">
+      <div class="cap">Veredito — <b>até onde o ban global alcança</b></div>
+      <table>
+        <tbody>
+          <tr class="has"><td>Membro comum, em vários grupos ao mesmo tempo</td><td><span class="pill on">✅ SIM</span> &nbsp;onde o bot for admin c/ ban_users</td></tr>
+          <tr><td>Admin de um grupo</td><td><span class="pill off">❌ NÃO</span> &nbsp;admin é imune a ban_users de outro admin</td></tr>
+          <tr><td><b>Dono / creator do grupo</b></td><td><span class="pill off">❌ NUNCA</span> &nbsp;ban_users jamais alcança o creator</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout ok" style="margin-top:14px">
+      <h4>🎯 Resposta direta sobre o dono</h4>
+      <p><b>Não — nenhum bot, nem com ban global, remove o dono de um grupo.</b> O <code style="font-family:var(--mono)">ban_users</code> só desce na hierarquia (alcança membro comum), e o ban global é apenas esse mesmo poder repetido em vários grupos. A <b>única</b> entidade capaz de derrubar a conta de um dono é o <b>próprio Telegram</b> (banimento de plataforma por violação dos termos) — jamais um bot administrador.</p>
+    </div>
+  </section>
+
   <!-- ============ FOOTER ============ -->
   <footer>
     <div><b style="color:var(--ink)">Fonte dos dados.</b> Valores extraídos dos dumps anexados. <code>adminRights = 24</code>, <code>defaultBannedRights = 91915648</code>, <code>untilDate = 2147483647</code> e a identidade do bot aparecem de forma consistente nos três arquivos.</div>

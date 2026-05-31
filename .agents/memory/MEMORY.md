@@ -1,0 +1,1 @@
+- [Infographic PDF regen](infographic-pdf.md) — how to rebuild Infografico_Moderacao_Bot.pdf from the HTML (playwright, single tall page).
