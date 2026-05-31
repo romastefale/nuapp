@@ -1,0 +1,389 @@
+{
+  "associatedStories" : {
+
+  },
+  "globalTags" : {
+    "rawValue" : 0
+  },
+  "attributes" : [
+    {
+      "messageId" : {
+        "id" : 234509,
+        "namespace" : 0,
+        "peerId" : {
+          "namespace" : {
+            "rawValue" : 2
+          },
+          "id" : {
+            "rawValue" : 3798418006
+          }
+        }
+      },
+      "threadMessageId" : {
+        "id" : 234422,
+        "peerId" : {
+          "namespace" : {
+            "rawValue" : 2
+          },
+          "id" : {
+            "rawValue" : 3798418006
+          }
+        },
+        "namespace" : 0
+      },
+      "isQuote" : false
+    },
+    {
+      "isSafe" : true,
+      "leadingPreview" : false,
+      "associatedMediaIds" : [
+
+      ],
+      "isManuallyAdded" : false,
+      "associatedPeerIds" : [
+
+      ]
+    },
+    {
+      "countdownBeginTime" : 1780263985,
+      "automaticTimestampBasedAttribute" : {
+        ".1" : 1780350385,
+        ".0" : 0
+      },
+      "associatedMessageIds" : [
+
+      ],
+      "timeout" : 86400
+    },
+    {
+      "rank" : "bot"
+    },
+    {
+      "entities" : [
+        {
+          "range" : {
+            "lowerBound" : 61,
+            "upperBound" : 87
+          },
+          "type" : "Url"
+        }
+      ]
+    },
+    {
+      "consumed" : true,
+      "pending" : false
+    },
+    {
+      "flags" : {
+        "rawValue" : 2
+      }
+    },
+    {
+      "pts" : 540036
+    }
+  ],
+  "media" : [
+
+  ],
+  "author" : {
+    "subscriberCount" : 18622,
+    "flags" : {
+      "rawValue" : 0
+    },
+    "usernames" : [
+
+    ],
+    "id" : {
+      "namespace" : {
+        "rawValue" : 0
+      },
+      "id" : {
+        "rawValue" : 8487886432
+      }
+    },
+    "username" : "pntcclub3_bot",
+    "firstName" : "â¤ï¸Punhetinderð¥",
+    "accessHash" : {
+      "personal" : -4876528063956882852
+    },
+    "botInfo" : {
+      "flags" : {
+        "rawValue" : 2
+      }
+    },
+    "photo" : [
+      {
+        "resource" : {
+          "datacenterId" : 1,
+          "sizeSpec" : "small",
+          "photoId" : 5131960391276629046
+        },
+        "hasVideo" : false,
+        "dimensions" : {
+          "height" : 80,
+          "width" : 80
+        },
+        "typeHint" : "generic",
+        "immediateThumbnailData" : {
+          "count" : 15,
+          "bytes" : [
+            1,
+            8,
+            8,
+            212,
+            249,
+            252,
+            236,
+            228,
+            236,
+            244,
+            197,
+            20,
+            81,
+            64,
+            207
+          ],
+          "pointer" : {
+            "pointerValue" : 6087364848
+          }
+        },
+        "isPersonal" : false,
+        "progressiveSizes" : [
+
+        ]
+      },
+      {
+        "isPersonal" : false,
+        "dimensions" : {
+          "height" : 640,
+          "width" : 640
+        },
+        "progressiveSizes" : [
+
+        ],
+        "hasVideo" : false,
+        "typeHint" : "generic",
+        "immediateThumbnailData" : {
+          "count" : 15,
+          "bytes" : [
+            1,
+            8,
+            8,
+            212,
+            249,
+            252,
+            236,
+            228,
+            236,
+            244,
+            197,
+            20,
+            81,
+            64,
+            207
+          ],
+          "pointer" : {
+            "pointerValue" : 6087361392
+          }
+        },
+        "resource" : {
+          "sizeSpec" : "fullSize",
+          "datacenterId" : 1,
+          "photoId" : 5131960391276629046
+        }
+      }
+    ],
+    "storiesHidden" : false
+  },
+  "associatedMessages" : {
+    "items" : [
+
+    ]
+  },
+  "associatedMedia" : {
+
+  },
+  "flags" : {
+    "rawValue" : 68
+  },
+  "peers" : {
+    "items" : [
+      {
+        ".0" : {
+          "namespace" : {
+            "rawValue" : 2
+          },
+          "id" : {
+            "rawValue" : 3798418006
+          }
+        },
+        ".1" : {
+          "version" : 0,
+          "flags" : {
+            "rawValue" : 256
+          },
+          "photo" : [
+            {
+              "resource" : {
+                "photoId" : 4952199122127620961,
+                "sizeSpec" : "small",
+                "datacenterId" : 1
+              },
+              "dimensions" : {
+                "width" : 80,
+                "height" : 80
+              },
+              "immediateThumbnailData" : {
+                "pointer" : {
+                  "pointerValue" : 6087371184
+                },
+                "bytes" : [
+                  1,
+                  8,
+                  8,
+                  206,
+                  62,
+                  88,
+                  92,
+                  227,
+                  158,
+                  152,
+                  162,
+                  138,
+                  40,
+                  176,
+                  220,
+                  143
+                ],
+                "count" : 16
+              },
+              "hasVideo" : false,
+              "isPersonal" : false,
+              "progressiveSizes" : [
+
+              ],
+              "typeHint" : "generic"
+            },
+            {
+              "dimensions" : {
+                "height" : 640,
+                "width" : 640
+              },
+              "typeHint" : "generic",
+              "resource" : {
+                "photoId" : 4952199122127620961,
+                "sizeSpec" : "fullSize",
+                "datacenterId" : 1
+              },
+              "immediateThumbnailData" : {
+                "bytes" : [
+                  1,
+                  8,
+                  8,
+                  206,
+                  62,
+                  88,
+                  92,
+                  227,
+                  158,
+                  152,
+                  162,
+                  138,
+                  40,
+                  176,
+                  220,
+                  143
+                ],
+                "count" : 16,
+                "pointer" : {
+                  "pointerValue" : 6087371312
+                }
+              },
+              "progressiveSizes" : [
+
+              ],
+              "isPersonal" : false,
+              "hasVideo" : false
+            }
+          ],
+          "id" : {
+            "namespace" : {
+              "rawValue" : 2
+            },
+            "id" : {
+              "rawValue" : 3798418006
+            }
+          },
+          "adminRights" : {
+            "rights" : {
+              "rawValue" : 24
+            }
+          },
+          "storiesHidden" : false,
+          "info" : {
+            "group" : {
+              "flags" : {
+                "rawValue" : 0
+              }
+            }
+          },
+          "creationDate" : 1779320826,
+          "accessHash" : {
+            "personal" : 2944691146328744256
+          },
+          "title" : "ð¨ ð«ððð«×¡×¡ð¦ ð¨",
+          "defaultBannedRights" : {
+            "flags" : {
+              "rawValue" : 91915648
+            },
+            "untilDate" : 2147483647
+          },
+          "participationStatus" : "member",
+          "usernames" : [
+
+          ]
+        }
+      }
+    ]
+  },
+  "timestamp" : 1780263985,
+  "tags" : {
+    "rawValue" : 8
+  },
+  "associatedMessageIds" : [
+    {
+      "peerId" : {
+        "id" : {
+          "rawValue" : 3798418006
+        },
+        "namespace" : {
+          "rawValue" : 2
+        }
+      },
+      "namespace" : 0,
+      "id" : 234509
+    }
+  ],
+  "stableVersion" : 3,
+  "id" : {
+    "namespace" : 0,
+    "id" : 234512,
+    "peerId" : {
+      "namespace" : {
+        "rawValue" : 2
+      },
+      "id" : {
+        "rawValue" : 3798418006
+      }
+    }
+  },
+  "stableId" : 4183,
+  "threadId" : 234422,
+  "localTags" : {
+    "rawValue" : 0
+  },
+  "text" : "â ï¸ Este comando sÃ³ funciona no privado com o bot.\nð Acesse: https://t.me/pntcclub3_bot",
+  "customTags" : [
+
+  ]
+}

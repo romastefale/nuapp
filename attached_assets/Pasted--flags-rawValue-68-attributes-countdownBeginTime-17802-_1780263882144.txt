@@ -1,0 +1,354 @@
+{
+  "flags" : {
+    "rawValue" : 68
+  },
+  "attributes" : [
+    {
+      "countdownBeginTime" : 1780263764,
+      "timeout" : 86400,
+      "associatedMessageIds" : [
+
+      ],
+      "automaticTimestampBasedAttribute" : {
+        ".0" : 0,
+        ".1" : 1780350164
+      }
+    },
+    {
+      "rank" : "bot"
+    },
+    {
+      "entities" : [
+        {
+          "range" : {
+            "lowerBound" : 0,
+            "upperBound" : 17
+          },
+          "type" : "Bold"
+        }
+      ]
+    },
+    {
+      "latestUsers" : [
+
+      ],
+      "count" : 0
+    },
+    {
+      "rows" : [
+        {
+          "buttons" : [
+            {
+              "action" : {
+                "url" : "https://t.me/pntcclub3_bot"
+              },
+              "title" : "👉 Entrar no PunheTinder"
+            }
+          ]
+        }
+      ],
+      "flags" : {
+        "rawValue" : 8
+      }
+    },
+    {
+      "pts" : 540020
+    }
+  ],
+  "associatedStories" : {
+
+  },
+  "customTags" : [
+
+  ],
+  "timestamp" : 1780263764,
+  "media" : [
+
+  ],
+  "stableVersion" : 1,
+  "localTags" : {
+    "rawValue" : 0
+  },
+  "peers" : {
+    "items" : [
+      {
+        ".1" : {
+          "defaultBannedRights" : {
+            "untilDate" : 2147483647,
+            "flags" : {
+              "rawValue" : 91915648
+            }
+          },
+          "flags" : {
+            "rawValue" : 256
+          },
+          "info" : {
+            "group" : {
+              "flags" : {
+                "rawValue" : 0
+              }
+            }
+          },
+          "creationDate" : 1779320826,
+          "storiesHidden" : false,
+          "id" : {
+            "id" : {
+              "rawValue" : 3798418006
+            },
+            "namespace" : {
+              "rawValue" : 2
+            }
+          },
+          "version" : 0,
+          "title" : "🚨 𝐫𝐞𝐝𝐫סס𝐦 🚨",
+          "accessHash" : {
+            "personal" : 2944691146328744256
+          },
+          "participationStatus" : "member",
+          "usernames" : [
+
+          ],
+          "adminRights" : {
+            "rights" : {
+              "rawValue" : 24
+            }
+          },
+          "photo" : [
+            {
+              "immediateThumbnailData" : {
+                "pointer" : {
+                  "pointerValue" : 5758909408
+                },
+                "bytes" : [
+                  1,
+                  8,
+                  8,
+                  206,
+                  62,
+                  88,
+                  92,
+                  227,
+                  158,
+                  152,
+                  162,
+                  138,
+                  40,
+                  176,
+                  220,
+                  143
+                ],
+                "count" : 16
+              },
+              "typeHint" : "generic",
+              "dimensions" : {
+                "height" : 80,
+                "width" : 80
+              },
+              "hasVideo" : false,
+              "isPersonal" : false,
+              "progressiveSizes" : [
+
+              ],
+              "resource" : {
+                "datacenterId" : 1,
+                "sizeSpec" : "small",
+                "photoId" : 4952199122127620961
+              }
+            },
+            {
+              "isPersonal" : false,
+              "dimensions" : {
+                "width" : 640,
+                "height" : 640
+              },
+              "resource" : {
+                "datacenterId" : 1,
+                "sizeSpec" : "fullSize",
+                "photoId" : 4952199122127620961
+              },
+              "progressiveSizes" : [
+
+              ],
+              "hasVideo" : false,
+              "typeHint" : "generic",
+              "immediateThumbnailData" : {
+                "count" : 16,
+                "pointer" : {
+                  "pointerValue" : 5758894272
+                },
+                "bytes" : [
+                  1,
+                  8,
+                  8,
+                  206,
+                  62,
+                  88,
+                  92,
+                  227,
+                  158,
+                  152,
+                  162,
+                  138,
+                  40,
+                  176,
+                  220,
+                  143
+                ]
+              }
+            }
+          ]
+        },
+        ".0" : {
+          "id" : {
+            "rawValue" : 3798418006
+          },
+          "namespace" : {
+            "rawValue" : 2
+          }
+        }
+      }
+    ]
+  },
+  "threadId" : 1,
+  "author" : {
+    "id" : {
+      "namespace" : {
+        "rawValue" : 0
+      },
+      "id" : {
+        "rawValue" : 8487886432
+      }
+    },
+    "accessHash" : {
+      "personal" : -4876528063956882852
+    },
+    "username" : "pntcclub3_bot",
+    "botInfo" : {
+      "flags" : {
+        "rawValue" : 2
+      }
+    },
+    "usernames" : [
+
+    ],
+    "photo" : [
+      {
+        "immediateThumbnailData" : {
+          "pointer" : {
+            "pointerValue" : 5758895568
+          },
+          "bytes" : [
+            1,
+            8,
+            8,
+            212,
+            249,
+            252,
+            236,
+            228,
+            236,
+            244,
+            197,
+            20,
+            81,
+            64,
+            207
+          ],
+          "count" : 15
+        },
+        "hasVideo" : false,
+        "isPersonal" : false,
+        "typeHint" : "generic",
+        "dimensions" : {
+          "height" : 80,
+          "width" : 80
+        },
+        "progressiveSizes" : [
+
+        ],
+        "resource" : {
+          "photoId" : 5131960391276629046,
+          "sizeSpec" : "small",
+          "datacenterId" : 1
+        }
+      },
+      {
+        "isPersonal" : false,
+        "progressiveSizes" : [
+
+        ],
+        "resource" : {
+          "photoId" : 5131960391276629046,
+          "datacenterId" : 1,
+          "sizeSpec" : "fullSize"
+        },
+        "hasVideo" : false,
+        "immediateThumbnailData" : {
+          "bytes" : [
+            1,
+            8,
+            8,
+            212,
+            249,
+            252,
+            236,
+            228,
+            236,
+            244,
+            197,
+            20,
+            81,
+            64,
+            207
+          ],
+          "pointer" : {
+            "pointerValue" : 5758905776
+          },
+          "count" : 15
+        },
+        "typeHint" : "generic",
+        "dimensions" : {
+          "width" : 640,
+          "height" : 640
+        }
+      }
+    ],
+    "subscriberCount" : 18622,
+    "flags" : {
+      "rawValue" : 0
+    },
+    "storiesHidden" : false,
+    "firstName" : "❤️Punhetinder🔥"
+  },
+  "id" : {
+    "peerId" : {
+      "namespace" : {
+        "rawValue" : 2
+      },
+      "id" : {
+        "rawValue" : 3798418006
+      }
+    },
+    "namespace" : 0,
+    "id" : 234498
+  },
+  "globalTags" : {
+    "rawValue" : 0
+  },
+  "associatedMedia" : {
+
+  },
+  "associatedMessageIds" : [
+
+  ],
+  "tags" : {
+    "rawValue" : 0
+  },
+  "associatedMessages" : {
+    "items" : [
+
+    ]
+  },
+  "text" : "❤️ Punhetinder 🔥\n\n🇧🇷 Envie suas fotos e vídeos aqui!\n───────────────────\n🇪🇸 ¡Envía tus fotos y videos aquí!\n───────────────────\n🇺🇸 Send your photos and videos here!",
+  "stableId" : 2650
+}

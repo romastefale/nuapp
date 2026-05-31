@@ -1,0 +1,782 @@
+{
+  "stableVersion" : 2,
+  "tags" : {
+    "rawValue" : 257
+  },
+  "customTags" : [
+
+  ],
+  "id" : {
+    "peerId" : {
+      "namespace" : {
+        "rawValue" : 0
+      },
+      "id" : {
+        "rawValue" : 8487886432
+      }
+    },
+    "id" : 156935,
+    "namespace" : 0
+  },
+  "author" : {
+    "photo" : [
+      {
+        "resource" : {
+          "sizeSpec" : "small",
+          "datacenterId" : 1,
+          "photoId" : 5131960391276629046
+        },
+        "isPersonal" : false,
+        "dimensions" : {
+          "height" : 80,
+          "width" : 80
+        },
+        "progressiveSizes" : [
+
+        ],
+        "immediateThumbnailData" : {
+          "bytes" : [
+            1,
+            8,
+            8,
+            212,
+            249,
+            252,
+            236,
+            228,
+            236,
+            244,
+            197,
+            20,
+            81,
+            64,
+            207
+          ],
+          "count" : 15,
+          "pointer" : {
+            "pointerValue" : 5318842352
+          }
+        },
+        "hasVideo" : false,
+        "typeHint" : "generic"
+      },
+      {
+        "hasVideo" : false,
+        "dimensions" : {
+          "height" : 640,
+          "width" : 640
+        },
+        "resource" : {
+          "sizeSpec" : "fullSize",
+          "datacenterId" : 1,
+          "photoId" : 5131960391276629046
+        },
+        "progressiveSizes" : [
+
+        ],
+        "typeHint" : "generic",
+        "immediateThumbnailData" : {
+          "count" : 15,
+          "pointer" : {
+            "pointerValue" : 5318845792
+          },
+          "bytes" : [
+            1,
+            8,
+            8,
+            212,
+            249,
+            252,
+            236,
+            228,
+            236,
+            244,
+            197,
+            20,
+            81,
+            64,
+            207
+          ]
+        },
+        "isPersonal" : false
+      }
+    ],
+    "username" : "pntcclub3_bot",
+    "firstName" : "â¤ï¸Punhetinderð¥",
+    "subscriberCount" : 18622,
+    "botInfo" : {
+      "flags" : {
+        "rawValue" : 2
+      }
+    },
+    "flags" : {
+      "rawValue" : 0
+    },
+    "storiesHidden" : false,
+    "usernames" : [
+
+    ],
+    "accessHash" : {
+      "personal" : -4876528063956882852
+    },
+    "id" : {
+      "namespace" : {
+        "rawValue" : 0
+      },
+      "id" : {
+        "rawValue" : 8487886432
+      }
+    }
+  },
+  "flags" : {
+    "rawValue" : 580
+  },
+  "associatedStories" : {
+
+  },
+  "text" : "â¤ï¸ Punhetinder ð¥\n\nð¤ GAB  â¢  #8819\n\nð 21  â¢  ð bsb\n\nð 2  ð¥ 1",
+  "localTags" : {
+    "rawValue" : 0
+  },
+  "media" : [
+    {
+      "representations" : [
+        {
+          "dimensions" : {
+            "width" : 240,
+            "height" : 320
+          },
+          "typeHint" : "generic",
+          "resource" : {
+            "datacenterId" : 1,
+            "accessHash" : -7866568405637671159,
+            "size" : 13068,
+            "fileReference" : {
+              "pointer" : {
+                "pointerValue" : 4879798528
+              },
+              "count" : 25,
+              "bytes" : [
+                1,
+                0,
+                2,
+                101,
+                7,
+                106,
+                28,
+                162,
+                210,
+                193,
+                137,
+                224,
+                149,
+                167,
+                108,
+                252,
+                13,
+                78,
+                125,
+                247,
+                161,
+                146,
+                102,
+                27,
+                158
+              ]
+            },
+            "photoId" : 5183685210703334318,
+            "sizeSpec" : "m"
+          },
+          "progressiveSizes" : [
+
+          ],
+          "hasVideo" : false,
+          "isPersonal" : false
+        },
+        {
+          "isPersonal" : false,
+          "progressiveSizes" : [
+
+          ],
+          "typeHint" : "generic",
+          "dimensions" : {
+            "height" : 800,
+            "width" : 600
+          },
+          "resource" : {
+            "fileReference" : {
+              "count" : 25,
+              "pointer" : {
+                "pointerValue" : 4879805760
+              },
+              "bytes" : [
+                1,
+                0,
+                2,
+                101,
+                7,
+                106,
+                28,
+                162,
+                210,
+                193,
+                137,
+                224,
+                149,
+                167,
+                108,
+                252,
+                13,
+                78,
+                125,
+                247,
+                161,
+                146,
+                102,
+                27,
+                158
+              ]
+            },
+            "photoId" : 5183685210703334318,
+            "datacenterId" : 1,
+            "accessHash" : -7866568405637671159,
+            "sizeSpec" : "x",
+            "size" : 52019
+          },
+          "hasVideo" : false
+        },
+        {
+          "dimensions" : {
+            "width" : 960,
+            "height" : 1280
+          },
+          "hasVideo" : false,
+          "progressiveSizes" : [
+            11913,
+            19147,
+            19818,
+            30016,
+            66028
+          ],
+          "resource" : {
+            "accessHash" : -7866568405637671159,
+            "fileReference" : {
+              "count" : 25,
+              "pointer" : {
+                "pointerValue" : 4879802848
+              },
+              "bytes" : [
+                1,
+                0,
+                2,
+                101,
+                7,
+                106,
+                28,
+                162,
+                210,
+                193,
+                137,
+                224,
+                149,
+                167,
+                108,
+                252,
+                13,
+                78,
+                125,
+                247,
+                161,
+                146,
+                102,
+                27,
+                158
+              ]
+            },
+            "sizeSpec" : "y",
+            "size" : 66028,
+            "photoId" : 5183685210703334318,
+            "datacenterId" : 1
+          },
+          "isPersonal" : false,
+          "typeHint" : "generic"
+        }
+      ],
+      "flags" : {
+        "rawValue" : 0
+      },
+      "immediateThumbnailData" : {
+        "pointer" : {
+          "pointerValue" : 5695999744
+        },
+        "count" : 146
+      },
+      "imageId" : {
+        "namespace" : 0,
+        "id" : 5183685210703334318
+      },
+      "videoRepresentations" : [
+
+      ],
+      "reference" : {
+        "cloud" : {
+          "accessHash" : -7866568405637671159,
+          "fileReference" : {
+            "count" : 25,
+            "bytes" : [
+              1,
+              0,
+              2,
+              101,
+              7,
+              106,
+              28,
+              162,
+              210,
+              193,
+              137,
+              224,
+              149,
+              167,
+              108,
+              252,
+              13,
+              78,
+              125,
+              247,
+              161,
+              146,
+              102,
+              27,
+              158
+            ],
+            "pointer" : {
+              "pointerValue" : 4879802400
+            }
+          },
+          "imageId" : 5183685210703334318
+        }
+      },
+      "peerIds" : [
+
+      ]
+    }
+  ],
+  "attributes" : [
+    {
+      "entities" : [
+        {
+          "range" : {
+            "upperBound" : 17,
+            "lowerBound" : 0
+          },
+          "type" : "Bold"
+        },
+        {
+          "type" : {
+            "TextMention" : {
+              "peerId" : {
+                "namespace" : {
+                  "rawValue" : 0
+                },
+                "id" : {
+                  "rawValue" : 7905098359
+                }
+              }
+            }
+          },
+          "range" : {
+            "lowerBound" : 22,
+            "upperBound" : 25
+          }
+        },
+        {
+          "range" : {
+            "upperBound" : 35,
+            "lowerBound" : 30
+          },
+          "type" : "Code"
+        }
+      ]
+    },
+    {
+      "rows" : [
+        {
+          "buttons" : [
+            {
+              "title" : "â¤ï¸ Curtir (72)",
+              "action" : {
+                "callback" : {
+                  "requiresPassword" : false,
+                  "data" : {
+                    "string" : "likenext_8819"
+                  }
+                }
+              }
+            },
+            {
+              "title" : "Passar â­",
+              "action" : {
+                "callback" : {
+                  "requiresPassword" : false,
+                  "data" : {
+                    "string" : "skip_8819"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "buttons" : [
+            {
+              "title" : "ð Reagir",
+              "action" : {
+                "callback" : {
+                  "requiresPassword" : false,
+                  "data" : {
+                    "string" : "react_8819"
+                  }
+                }
+              }
+            },
+            {
+              "title" : "âï¸ Comentar",
+              "action" : {
+                "callback" : {
+                  "data" : {
+                    "string" : "comment_8819"
+                  },
+                  "requiresPassword" : false
+                }
+              }
+            },
+            {
+              "title" : "ð¬ Ver (1)",
+              "action" : {
+                "callback" : {
+                  "requiresPassword" : false,
+                  "data" : {
+                    "string" : "viewcomments_8819"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "buttons" : [
+            {
+              "title" : "ð· Galeria (1)",
+              "action" : {
+                "callback" : {
+                  "requiresPassword" : false,
+                  "data" : {
+                    "string" : "authorgallery_8819"
+                  }
+                }
+              }
+            },
+            {
+              "action" : {
+                "callback" : {
+                  "requiresPassword" : false,
+                  "data" : {
+                    "string" : "blockauthor_8819"
+                  }
+                }
+              },
+              "title" : "ð« NÃ£o ver mais dele"
+            }
+          ]
+        },
+        {
+          "buttons" : [
+            {
+              "title" : "ð¹ VideoChat 24h",
+              "action" : {
+                "url" : "https://t.me/pntcclub_bot"
+              }
+            },
+            {
+              "title" : "ð  Menu",
+              "action" : {
+                "callback" : {
+                  "requiresPassword" : false,
+                  "data" : {
+                    "string" : "show_commands"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "flags" : {
+        "rawValue" : 8
+      }
+    }
+  ],
+  "stableId" : 2128,
+  "peers" : {
+    "items" : [
+      {
+        ".1" : {
+          "username" : "pntcclub3_bot",
+          "accessHash" : {
+            "personal" : -4876528063956882852
+          },
+          "botInfo" : {
+            "flags" : {
+              "rawValue" : 2
+            }
+          },
+          "storiesHidden" : false,
+          "flags" : {
+            "rawValue" : 0
+          },
+          "subscriberCount" : 18622,
+          "id" : {
+            "id" : {
+              "rawValue" : 8487886432
+            },
+            "namespace" : {
+              "rawValue" : 0
+            }
+          },
+          "usernames" : [
+
+          ],
+          "firstName" : "â¤ï¸Punhetinderð¥",
+          "photo" : [
+            {
+              "hasVideo" : false,
+              "dimensions" : {
+                "height" : 80,
+                "width" : 80
+              },
+              "immediateThumbnailData" : {
+                "count" : 15,
+                "pointer" : {
+                  "pointerValue" : 5318842352
+                },
+                "bytes" : [
+                  1,
+                  8,
+                  8,
+                  212,
+                  249,
+                  252,
+                  236,
+                  228,
+                  236,
+                  244,
+                  197,
+                  20,
+                  81,
+                  64,
+                  207
+                ]
+              },
+              "isPersonal" : false,
+              "typeHint" : "generic",
+              "progressiveSizes" : [
+
+              ],
+              "resource" : {
+                "sizeSpec" : "small",
+                "photoId" : 5131960391276629046,
+                "datacenterId" : 1
+              }
+            },
+            {
+              "progressiveSizes" : [
+
+              ],
+              "resource" : {
+                "photoId" : 5131960391276629046,
+                "sizeSpec" : "fullSize",
+                "datacenterId" : 1
+              },
+              "immediateThumbnailData" : {
+                "pointer" : {
+                  "pointerValue" : 5318845792
+                },
+                "bytes" : [
+                  1,
+                  8,
+                  8,
+                  212,
+                  249,
+                  252,
+                  236,
+                  228,
+                  236,
+                  244,
+                  197,
+                  20,
+                  81,
+                  64,
+                  207
+                ],
+                "count" : 15
+              },
+              "isPersonal" : false,
+              "typeHint" : "generic",
+              "hasVideo" : false,
+              "dimensions" : {
+                "height" : 640,
+                "width" : 640
+              }
+            }
+          ]
+        },
+        ".0" : {
+          "namespace" : {
+            "rawValue" : 0
+          },
+          "id" : {
+            "rawValue" : 8487886432
+          }
+        }
+      },
+      {
+        ".0" : {
+          "namespace" : {
+            "rawValue" : 0
+          },
+          "id" : {
+            "rawValue" : 7905098359
+          }
+        },
+        ".1" : {
+          "id" : {
+            "namespace" : {
+              "rawValue" : 0
+            },
+            "id" : {
+              "rawValue" : 7905098359
+            }
+          },
+          "firstName" : "GAB",
+          "storiesHidden" : false,
+          "photo" : [
+            {
+              "dimensions" : {
+                "height" : 80,
+                "width" : 80
+              },
+              "hasVideo" : false,
+              "typeHint" : "generic",
+              "progressiveSizes" : [
+
+              ],
+              "resource" : {
+                "sizeSpec" : "small",
+                "datacenterId" : 1,
+                "photoId" : 5102718346959981566
+              },
+              "isPersonal" : false,
+              "immediateThumbnailData" : {
+                "pointer" : {
+                  "pointerValue" : 5508473504
+                },
+                "count" : 19,
+                "bytes" : [
+                  1,
+                  8,
+                  8,
+                  176,
+                  243,
+                  132,
+                  184,
+                  14,
+                  25,
+                  194,
+                  142,
+                  54,
+                  142,
+                  148,
+                  81,
+                  69,
+                  34,
+                  236,
+                  127
+                ]
+              }
+            },
+            {
+              "hasVideo" : false,
+              "isPersonal" : false,
+              "immediateThumbnailData" : {
+                "bytes" : [
+                  1,
+                  8,
+                  8,
+                  176,
+                  243,
+                  132,
+                  184,
+                  14,
+                  25,
+                  194,
+                  142,
+                  54,
+                  142,
+                  148,
+                  81,
+                  69,
+                  34,
+                  236,
+                  127
+                ],
+                "count" : 19,
+                "pointer" : {
+                  "pointerValue" : 5508473568
+                }
+              },
+              "dimensions" : {
+                "height" : 640,
+                "width" : 640
+              },
+              "progressiveSizes" : [
+
+              ],
+              "typeHint" : "generic",
+              "resource" : {
+                "photoId" : 5102718346959981566,
+                "sizeSpec" : "fullSize",
+                "datacenterId" : 1
+              }
+            }
+          ],
+          "flags" : {
+            "rawValue" : 0
+          },
+          "usernames" : [
+
+          ],
+          "accessHash" : {
+            "personal" : -7797141828190179172
+          },
+          "username" : "gab2982"
+        }
+      }
+    ]
+  },
+  "associatedMessages" : {
+    "items" : [
+
+    ]
+  },
+  "timestamp" : 1779758998,
+  "associatedMessageIds" : [
+
+  ],
+  "associatedMedia" : {
+
+  },
+  "globalTags" : {
+    "rawValue" : 0
+  }
+}

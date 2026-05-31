@@ -1,0 +1,779 @@
+{
+  "associatedMessageIds" : [
+
+  ],
+  "localTags" : {
+    "rawValue" : 0
+  },
+  "id" : {
+    "peerId" : {
+      "id" : {
+        "rawValue" : 8487886432
+      },
+      "namespace" : {
+        "rawValue" : 0
+      }
+    },
+    "namespace" : 0,
+    "id" : 164939
+  },
+  "peers" : {
+    "items" : [
+      {
+        ".0" : {
+          "namespace" : {
+            "rawValue" : 0
+          },
+          "id" : {
+            "rawValue" : 8487886432
+          }
+        },
+        ".1" : {
+          "subscriberCount" : 18622,
+          "id" : {
+            "id" : {
+              "rawValue" : 8487886432
+            },
+            "namespace" : {
+              "rawValue" : 0
+            }
+          },
+          "storiesHidden" : false,
+          "username" : "pntcclub3_bot",
+          "botInfo" : {
+            "flags" : {
+              "rawValue" : 2
+            }
+          },
+          "usernames" : [
+
+          ],
+          "photo" : [
+            {
+              "isPersonal" : false,
+              "hasVideo" : false,
+              "progressiveSizes" : [
+
+              ],
+              "typeHint" : "generic",
+              "dimensions" : {
+                "height" : 80,
+                "width" : 80
+              },
+              "immediateThumbnailData" : {
+                "bytes" : [
+                  1,
+                  8,
+                  8,
+                  212,
+                  249,
+                  252,
+                  236,
+                  228,
+                  236,
+                  244,
+                  197,
+                  20,
+                  81,
+                  64,
+                  207
+                ],
+                "count" : 15,
+                "pointer" : {
+                  "pointerValue" : 5758895632
+                }
+              },
+              "resource" : {
+                "datacenterId" : 1,
+                "photoId" : 5131960391276629046,
+                "sizeSpec" : "small"
+              }
+            },
+            {
+              "typeHint" : "generic",
+              "resource" : {
+                "datacenterId" : 1,
+                "sizeSpec" : "fullSize",
+                "photoId" : 5131960391276629046
+              },
+              "dimensions" : {
+                "height" : 640,
+                "width" : 640
+              },
+              "progressiveSizes" : [
+
+              ],
+              "immediateThumbnailData" : {
+                "pointer" : {
+                  "pointerValue" : 5758896336
+                },
+                "count" : 15,
+                "bytes" : [
+                  1,
+                  8,
+                  8,
+                  212,
+                  249,
+                  252,
+                  236,
+                  228,
+                  236,
+                  244,
+                  197,
+                  20,
+                  81,
+                  64,
+                  207
+                ]
+              },
+              "isPersonal" : false,
+              "hasVideo" : false
+            }
+          ],
+          "flags" : {
+            "rawValue" : 0
+          },
+          "accessHash" : {
+            "personal" : -4876528063956882852
+          },
+          "firstName" : "❤️Punhetinder🔥"
+        }
+      },
+      {
+        ".1" : {
+          "id" : {
+            "id" : {
+              "rawValue" : 8921934492
+            },
+            "namespace" : {
+              "rawValue" : 0
+            }
+          },
+          "storiesHidden" : false,
+          "usernames" : [
+
+          ],
+          "photo" : [
+            {
+              "immediateThumbnailData" : {
+                "bytes" : [
+                  1,
+                  8,
+                  8,
+                  137,
+                  179,
+                  108,
+                  225,
+                  159,
+                  144,
+                  57,
+                  3,
+                  61,
+                  253,
+                  40,
+                  162,
+                  138,
+                  6,
+                  127
+                ],
+                "count" : 18,
+                "pointer" : {
+                  "pointerValue" : 5507965024
+                }
+              },
+              "dimensions" : {
+                "width" : 80,
+                "height" : 80
+              },
+              "hasVideo" : false,
+              "resource" : {
+                "photoId" : 4929385149204466636,
+                "sizeSpec" : "small",
+                "datacenterId" : 1
+              },
+              "progressiveSizes" : [
+
+              ],
+              "isPersonal" : false,
+              "typeHint" : "generic"
+            },
+            {
+              "immediateThumbnailData" : {
+                "bytes" : [
+                  1,
+                  8,
+                  8,
+                  137,
+                  179,
+                  108,
+                  225,
+                  159,
+                  144,
+                  57,
+                  3,
+                  61,
+                  253,
+                  40,
+                  162,
+                  138,
+                  6,
+                  127
+                ],
+                "pointer" : {
+                  "pointerValue" : 5507972608
+                },
+                "count" : 18
+              },
+              "dimensions" : {
+                "width" : 640,
+                "height" : 640
+              },
+              "progressiveSizes" : [
+
+              ],
+              "typeHint" : "generic",
+              "hasVideo" : false,
+              "resource" : {
+                "datacenterId" : 1,
+                "sizeSpec" : "fullSize",
+                "photoId" : 4929385149204466636
+              },
+              "isPersonal" : false
+            }
+          ],
+          "accessHash" : {
+            "personal" : -8562046154641106541
+          },
+          "firstName" : "Mangas",
+          "flags" : {
+            "rawValue" : 0
+          }
+        },
+        ".0" : {
+          "namespace" : {
+            "rawValue" : 0
+          },
+          "id" : {
+            "rawValue" : 8921934492
+          }
+        }
+      }
+    ]
+  },
+  "stableId" : 962,
+  "attributes" : [
+    {
+      "entities" : [
+        {
+          "range" : {
+            "upperBound" : 17,
+            "lowerBound" : 0
+          },
+          "type" : "Bold"
+        },
+        {
+          "range" : {
+            "lowerBound" : 22,
+            "upperBound" : 28
+          },
+          "type" : {
+            "TextMention" : {
+              "peerId" : {
+                "namespace" : {
+                  "rawValue" : 0
+                },
+                "id" : {
+                  "rawValue" : 8921934492
+                }
+              }
+            }
+          }
+        },
+        {
+          "type" : "Code",
+          "range" : {
+            "upperBound" : 39,
+            "lowerBound" : 33
+          }
+        }
+      ]
+    },
+    {
+      "rows" : [
+        {
+          "buttons" : [
+            {
+              "title" : "❤️ Curtir (13)",
+              "action" : {
+                "callback" : {
+                  "requiresPassword" : false,
+                  "data" : {
+                    "string" : "likenext_13168"
+                  }
+                }
+              }
+            },
+            {
+              "title" : "Passar ⏭",
+              "action" : {
+                "callback" : {
+                  "requiresPassword" : false,
+                  "data" : {
+                    "string" : "skip_13168"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "buttons" : [
+            {
+              "title" : "😍 Reagir",
+              "action" : {
+                "callback" : {
+                  "data" : {
+                    "string" : "react_13168"
+                  },
+                  "requiresPassword" : false
+                }
+              }
+            },
+            {
+              "title" : "✍️ Comentar",
+              "action" : {
+                "callback" : {
+                  "data" : {
+                    "string" : "comment_13168"
+                  },
+                  "requiresPassword" : false
+                }
+              }
+            },
+            {
+              "action" : {
+                "callback" : {
+                  "requiresPassword" : false,
+                  "data" : {
+                    "string" : "viewcomments_13168"
+                  }
+                }
+              },
+              "title" : "💬 Ver (0)"
+            }
+          ]
+        },
+        {
+          "buttons" : [
+            {
+              "title" : "📷 Galeria (1)",
+              "action" : {
+                "callback" : {
+                  "requiresPassword" : false,
+                  "data" : {
+                    "string" : "authorgallery_13168"
+                  }
+                }
+              }
+            },
+            {
+              "action" : {
+                "callback" : {
+                  "data" : {
+                    "string" : "blockauthor_13168"
+                  },
+                  "requiresPassword" : false
+                }
+              },
+              "title" : "🚫 Não ver mais dele"
+            }
+          ]
+        },
+        {
+          "buttons" : [
+            {
+              "action" : {
+                "url" : "https://t.me/pntcclub_bot"
+              },
+              "title" : "📹 VideoChat 24h"
+            },
+            {
+              "title" : "🏠 Menu",
+              "action" : {
+                "callback" : {
+                  "requiresPassword" : false,
+                  "data" : {
+                    "string" : "show_commands"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "flags" : {
+        "rawValue" : 8
+      }
+    }
+  ],
+  "associatedMedia" : {
+
+  },
+  "associatedMessages" : {
+    "items" : [
+
+    ]
+  },
+  "flags" : {
+    "rawValue" : 580
+  },
+  "customTags" : [
+
+  ],
+  "tags" : {
+    "rawValue" : 257
+  },
+  "timestamp" : 1780211627,
+  "globalTags" : {
+    "rawValue" : 0
+  },
+  "media" : [
+    {
+      "imageId" : {
+        "id" : 4956632374485650516,
+        "namespace" : 0
+      },
+      "flags" : {
+        "rawValue" : 0
+      },
+      "peerIds" : [
+
+      ],
+      "immediateThumbnailData" : {
+        "count" : 78,
+        "pointer" : {
+          "pointerValue" : 5508000144
+        }
+      },
+      "reference" : {
+        "cloud" : {
+          "accessHash" : -1333752917655914658,
+          "fileReference" : {
+            "count" : 25,
+            "pointer" : {
+              "pointerValue" : 5507971040
+            },
+            "bytes" : [
+              1,
+              0,
+              2,
+              132,
+              75,
+              106,
+              28,
+              159,
+              153,
+              197,
+              37,
+              36,
+              118,
+              246,
+              189,
+              8,
+              47,
+              237,
+              69,
+              64,
+              232,
+              131,
+              209,
+              84,
+              106
+            ]
+          },
+          "imageId" : 4956632374485650516
+        }
+      },
+      "representations" : [
+        {
+          "resource" : {
+            "accessHash" : -1333752917655914658,
+            "photoId" : 4956632374485650516,
+            "datacenterId" : 1,
+            "fileReference" : {
+              "pointer" : {
+                "pointerValue" : 5507967168
+              },
+              "bytes" : [
+                1,
+                0,
+                2,
+                132,
+                75,
+                106,
+                28,
+                159,
+                153,
+                197,
+                37,
+                36,
+                118,
+                246,
+                189,
+                8,
+                47,
+                237,
+                69,
+                64,
+                232,
+                131,
+                209,
+                84,
+                106
+              ],
+              "count" : 25
+            },
+            "size" : 9802,
+            "sizeSpec" : "m"
+          },
+          "dimensions" : {
+            "width" : 180,
+            "height" : 320
+          },
+          "hasVideo" : false,
+          "isPersonal" : false,
+          "typeHint" : "generic",
+          "progressiveSizes" : [
+
+          ]
+        },
+        {
+          "isPersonal" : false,
+          "typeHint" : "generic",
+          "resource" : {
+            "photoId" : 4956632374485650516,
+            "datacenterId" : 1,
+            "fileReference" : {
+              "bytes" : [
+                1,
+                0,
+                2,
+                132,
+                75,
+                106,
+                28,
+                159,
+                153,
+                197,
+                37,
+                36,
+                118,
+                246,
+                189,
+                8,
+                47,
+                237,
+                69,
+                64,
+                232,
+                131,
+                209,
+                84,
+                106
+              ],
+              "count" : 25,
+              "pointer" : {
+                "pointerValue" : 5507967104
+              }
+            },
+            "accessHash" : -1333752917655914658,
+            "sizeSpec" : "x",
+            "size" : 41753
+          },
+          "progressiveSizes" : [
+
+          ],
+          "dimensions" : {
+            "width" : 450,
+            "height" : 800
+          },
+          "hasVideo" : false
+        },
+        {
+          "progressiveSizes" : [
+            11024,
+            20969,
+            23401,
+            52433,
+            80045
+          ],
+          "dimensions" : {
+            "height" : 1280,
+            "width" : 720
+          },
+          "hasVideo" : false,
+          "isPersonal" : false,
+          "resource" : {
+            "datacenterId" : 1,
+            "size" : 80045,
+            "photoId" : 4956632374485650516,
+            "sizeSpec" : "y",
+            "accessHash" : -1333752917655914658,
+            "fileReference" : {
+              "count" : 25,
+              "bytes" : [
+                1,
+                0,
+                2,
+                132,
+                75,
+                106,
+                28,
+                159,
+                153,
+                197,
+                37,
+                36,
+                118,
+                246,
+                189,
+                8,
+                47,
+                237,
+                69,
+                64,
+                232,
+                131,
+                209,
+                84,
+                106
+              ],
+              "pointer" : {
+                "pointerValue" : 5507960576
+              }
+            }
+          },
+          "typeHint" : "generic"
+        }
+      ],
+      "videoRepresentations" : [
+
+      ]
+    }
+  ],
+  "associatedStories" : {
+
+  },
+  "stableVersion" : 0,
+  "author" : {
+    "storiesHidden" : false,
+    "firstName" : "❤️Punhetinder🔥",
+    "flags" : {
+      "rawValue" : 0
+    },
+    "id" : {
+      "namespace" : {
+        "rawValue" : 0
+      },
+      "id" : {
+        "rawValue" : 8487886432
+      }
+    },
+    "botInfo" : {
+      "flags" : {
+        "rawValue" : 2
+      }
+    },
+    "usernames" : [
+
+    ],
+    "accessHash" : {
+      "personal" : -4876528063956882852
+    },
+    "subscriberCount" : 18622,
+    "username" : "pntcclub3_bot",
+    "photo" : [
+      {
+        "hasVideo" : false,
+        "resource" : {
+          "photoId" : 5131960391276629046,
+          "sizeSpec" : "small",
+          "datacenterId" : 1
+        },
+        "typeHint" : "generic",
+        "isPersonal" : false,
+        "dimensions" : {
+          "width" : 80,
+          "height" : 80
+        },
+        "progressiveSizes" : [
+
+        ],
+        "immediateThumbnailData" : {
+          "count" : 15,
+          "bytes" : [
+            1,
+            8,
+            8,
+            212,
+            249,
+            252,
+            236,
+            228,
+            236,
+            244,
+            197,
+            20,
+            81,
+            64,
+            207
+          ],
+          "pointer" : {
+            "pointerValue" : 5758895632
+          }
+        }
+      },
+      {
+        "isPersonal" : false,
+        "dimensions" : {
+          "width" : 640,
+          "height" : 640
+        },
+        "progressiveSizes" : [
+
+        ],
+        "resource" : {
+          "datacenterId" : 1,
+          "sizeSpec" : "fullSize",
+          "photoId" : 5131960391276629046
+        },
+        "immediateThumbnailData" : {
+          "pointer" : {
+            "pointerValue" : 5758896336
+          },
+          "bytes" : [
+            1,
+            8,
+            8,
+            212,
+            249,
+            252,
+            236,
+            228,
+            236,
+            244,
+            197,
+            20,
+            81,
+            64,
+            207
+          ],
+          "count" : 15
+        },
+        "typeHint" : "generic",
+        "hasVideo" : false
+      }
+    ]
+  },
+  "text" : "❤️ Punhetinder 🔥\n\n👤 Mangas  •  #13168\n\n🎂 22  •  🔄 Versátil Ativo  •  💘 Só uma transa"
+}

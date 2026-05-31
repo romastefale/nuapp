@@ -1,0 +1,473 @@
+{
+  "stableId" : 1893,
+  "id" : {
+    "peerId" : {
+      "id" : {
+        "rawValue" : 8487886432
+      },
+      "namespace" : {
+        "rawValue" : 0
+      }
+    },
+    "namespace" : 0,
+    "id" : 164864
+  },
+  "text" : "❤️ Punhetinder 🔥\n\n👋 Olá! Bem-vindo(a)!\n\nAqui você pode enviar suas fotos e vídeos sem o perigo de ser denunciado.\n\n💘 Como funciona:\n1️⃣ Envie sua foto ou vídeo e aguarde aprovação\n2️⃣ Use os botões do menu para navegar, curtir e comentar\n3️⃣ Se vocês se curtirem mutuamente → 🔥 MATCH!\n4️⃣ O bot avisa os dois no privado 😏\n\n🔗 Você pode colocar o número da sua foto em um comentário usando #1234 — ele será linkável para sua foto.\n━━━━━━━━━━━━━━━━━━━━\n⭐ Comandos dos botões com estrela e visualização ilimitada são exclusivos para assinantes PNTC Club.\nNão assinantes podem ver até 30 fotos/dia, ou 100/dia se já enviaram uma foto aprovada.\n━━━━━━━━━━━━━━━━━━━━\n⚠️ Evite postar fotos repetidas.\n🤝 Seja educado com as pessoas ao fazer comentários.\n\n\n🔥 Total de Matches: 1357\n📸 5735 usuários já enviaram ao menos uma foto\n👀 16348 usuários ainda não enviaram nenhuma foto\n👇 Escolha uma opção abaixo:",
+  "peers" : {
+    "items" : [
+      {
+        ".0" : {
+          "id" : {
+            "rawValue" : 8487886432
+          },
+          "namespace" : {
+            "rawValue" : 0
+          }
+        },
+        ".1" : {
+          "id" : {
+            "id" : {
+              "rawValue" : 8487886432
+            },
+            "namespace" : {
+              "rawValue" : 0
+            }
+          },
+          "botInfo" : {
+            "flags" : {
+              "rawValue" : 2
+            }
+          },
+          "firstName" : "❤️Punhetinder🔥",
+          "accessHash" : {
+            "personal" : -4876528063956882852
+          },
+          "flags" : {
+            "rawValue" : 0
+          },
+          "usernames" : [
+
+          ],
+          "storiesHidden" : false,
+          "subscriberCount" : 18622,
+          "username" : "pntcclub3_bot",
+          "photo" : [
+            {
+              "hasVideo" : false,
+              "dimensions" : {
+                "height" : 80,
+                "width" : 80
+              },
+              "isPersonal" : false,
+              "typeHint" : "generic",
+              "immediateThumbnailData" : {
+                "count" : 15,
+                "pointer" : {
+                  "pointerValue" : 5507548160
+                },
+                "bytes" : [
+                  1,
+                  8,
+                  8,
+                  212,
+                  249,
+                  252,
+                  236,
+                  228,
+                  236,
+                  244,
+                  197,
+                  20,
+                  81,
+                  64,
+                  207
+                ]
+              },
+              "resource" : {
+                "photoId" : 5131960391276629046,
+                "datacenterId" : 1,
+                "sizeSpec" : "small"
+              },
+              "progressiveSizes" : [
+
+              ]
+            },
+            {
+              "resource" : {
+                "photoId" : 5131960391276629046,
+                "datacenterId" : 1,
+                "sizeSpec" : "fullSize"
+              },
+              "dimensions" : {
+                "width" : 640,
+                "height" : 640
+              },
+              "hasVideo" : false,
+              "typeHint" : "generic",
+              "isPersonal" : false,
+              "progressiveSizes" : [
+
+              ],
+              "immediateThumbnailData" : {
+                "count" : 15,
+                "pointer" : {
+                  "pointerValue" : 5507554688
+                },
+                "bytes" : [
+                  1,
+                  8,
+                  8,
+                  212,
+                  249,
+                  252,
+                  236,
+                  228,
+                  236,
+                  244,
+                  197,
+                  20,
+                  81,
+                  64,
+                  207
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "customTags" : [
+
+  ],
+  "associatedMessages" : {
+    "items" : [
+
+    ]
+  },
+  "localTags" : {
+    "rawValue" : 0
+  },
+  "globalTags" : {
+    "rawValue" : 0
+  },
+  "media" : [
+
+  ],
+  "associatedMedia" : {
+
+  },
+  "associatedStories" : {
+
+  },
+  "flags" : {
+    "rawValue" : 68
+  },
+  "attributes" : [
+    {
+      "entities" : [
+        {
+          "type" : "Bold",
+          "range" : {
+            "lowerBound" : 0,
+            "upperBound" : 17
+          }
+        },
+        {
+          "type" : "Bold",
+          "range" : {
+            "upperBound" : 40,
+            "lowerBound" : 22
+          }
+        },
+        {
+          "type" : "Bold",
+          "range" : {
+            "upperBound" : 134,
+            "lowerBound" : 120
+          }
+        },
+        {
+          "type" : "Bold",
+          "range" : {
+            "lowerBound" : 279,
+            "upperBound" : 288
+          }
+        },
+        {
+          "type" : "Italic",
+          "range" : {
+            "lowerBound" : 458,
+            "upperBound" : 556
+          }
+        },
+        {
+          "range" : {
+            "lowerBound" : 557,
+            "upperBound" : 644
+          },
+          "type" : "Italic"
+        },
+        {
+          "range" : {
+            "lowerBound" : 669,
+            "upperBound" : 698
+          },
+          "type" : "Bold"
+        },
+        {
+          "range" : {
+            "upperBound" : 774,
+            "lowerBound" : 757
+          },
+          "type" : "Bold"
+        },
+        {
+          "type" : "Bold",
+          "range" : {
+            "lowerBound" : 783,
+            "upperBound" : 787
+          }
+        },
+        {
+          "type" : "Bold",
+          "range" : {
+            "lowerBound" : 830,
+            "upperBound" : 835
+          }
+        }
+      ]
+    },
+    {
+      "rows" : [
+        {
+          "buttons" : [
+            {
+              "title" : "📸 Ver fotos",
+              "action" : {
+                "callback" : {
+                  "data" : {
+                    "string" : "browse_photos"
+                  },
+                  "requiresPassword" : false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "buttons" : [
+            {
+              "action" : {
+                "url" : "https://t.me/pntcclub_bot"
+              },
+              "title" : "⭐ Assinar VIP (Top 20 & Curtidas)"
+            }
+          ]
+        },
+        {
+          "buttons" : [
+            {
+              "title" : "📷 Minhas fotos",
+              "action" : {
+                "callback" : {
+                  "data" : {
+                    "string" : "my_photos"
+                  },
+                  "requiresPassword" : false
+                }
+              }
+            },
+            {
+              "title" : "📊 Estatísticas",
+              "action" : {
+                "callback" : {
+                  "requiresPassword" : false,
+                  "data" : {
+                    "string" : "my_stats"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "buttons" : [
+            {
+              "title" : "✏️ Editar perfil",
+              "action" : {
+                "callback" : {
+                  "requiresPassword" : false,
+                  "data" : {
+                    "string" : "editar_perfil"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "buttons" : [
+            {
+              "title" : "🗑 Remover minhas fotos",
+              "action" : {
+                "callback" : {
+                  "data" : {
+                    "string" : "delete_my_photos"
+                  },
+                  "requiresPassword" : false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "buttons" : [
+            {
+              "title" : "💡 Dicas Úteis",
+              "action" : {
+                "callback" : {
+                  "data" : {
+                    "string" : "useful_tips"
+                  },
+                  "requiresPassword" : false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "buttons" : [
+            {
+              "title" : "📹 VideoChat 24h",
+              "action" : {
+                "url" : "https://t.me/pntcclub_bot"
+              }
+            }
+          ]
+        }
+      ],
+      "flags" : {
+        "rawValue" : 8
+      }
+    }
+  ],
+  "stableVersion" : 0,
+  "author" : {
+    "flags" : {
+      "rawValue" : 0
+    },
+    "storiesHidden" : false,
+    "photo" : [
+      {
+        "immediateThumbnailData" : {
+          "pointer" : {
+            "pointerValue" : 5507548160
+          },
+          "count" : 15,
+          "bytes" : [
+            1,
+            8,
+            8,
+            212,
+            249,
+            252,
+            236,
+            228,
+            236,
+            244,
+            197,
+            20,
+            81,
+            64,
+            207
+          ]
+        },
+        "resource" : {
+          "sizeSpec" : "small",
+          "datacenterId" : 1,
+          "photoId" : 5131960391276629046
+        },
+        "dimensions" : {
+          "height" : 80,
+          "width" : 80
+        },
+        "hasVideo" : false,
+        "isPersonal" : false,
+        "typeHint" : "generic",
+        "progressiveSizes" : [
+
+        ]
+      },
+      {
+        "dimensions" : {
+          "width" : 640,
+          "height" : 640
+        },
+        "hasVideo" : false,
+        "progressiveSizes" : [
+
+        ],
+        "isPersonal" : false,
+        "typeHint" : "generic",
+        "immediateThumbnailData" : {
+          "count" : 15,
+          "pointer" : {
+            "pointerValue" : 5507554688
+          },
+          "bytes" : [
+            1,
+            8,
+            8,
+            212,
+            249,
+            252,
+            236,
+            228,
+            236,
+            244,
+            197,
+            20,
+            81,
+            64,
+            207
+          ]
+        },
+        "resource" : {
+          "photoId" : 5131960391276629046,
+          "sizeSpec" : "fullSize",
+          "datacenterId" : 1
+        }
+      }
+    ],
+    "accessHash" : {
+      "personal" : -4876528063956882852
+    },
+    "username" : "pntcclub3_bot",
+    "subscriberCount" : 18622,
+    "usernames" : [
+
+    ],
+    "botInfo" : {
+      "flags" : {
+        "rawValue" : 2
+      }
+    },
+    "firstName" : "❤️Punhetinder🔥",
+    "id" : {
+      "namespace" : {
+        "rawValue" : 0
+      },
+      "id" : {
+        "rawValue" : 8487886432
+      }
+    }
+  },
+  "timestamp" : 1780209933,
+  "associatedMessageIds" : [
+
+  ],
+  "tags" : {
+    "rawValue" : 0
+  }
+}

@@ -1,0 +1,297 @@
+{
+  "peers" : {
+    "items" : [
+      {
+        ".0" : {
+          "id" : {
+            "rawValue" : 8487886432
+          },
+          "namespace" : {
+            "rawValue" : 0
+          }
+        },
+        ".1" : {
+          "accessHash" : {
+            "personal" : -4876528063956882852
+          },
+          "photo" : [
+            {
+              "resource" : {
+                "sizeSpec" : "small",
+                "photoId" : 5131960391276629046,
+                "datacenterId" : 1
+              },
+              "dimensions" : {
+                "width" : 80,
+                "height" : 80
+              },
+              "progressiveSizes" : [
+
+              ],
+              "immediateThumbnailData" : {
+                "count" : 15,
+                "pointer" : {
+                  "pointerValue" : 5758906688
+                },
+                "bytes" : [
+                  1,
+                  8,
+                  8,
+                  212,
+                  249,
+                  252,
+                  236,
+                  228,
+                  236,
+                  244,
+                  197,
+                  20,
+                  81,
+                  64,
+                  207
+                ]
+              },
+              "isPersonal" : false,
+              "hasVideo" : false,
+              "typeHint" : "generic"
+            },
+            {
+              "immediateThumbnailData" : {
+                "pointer" : {
+                  "pointerValue" : 5758908288
+                },
+                "bytes" : [
+                  1,
+                  8,
+                  8,
+                  212,
+                  249,
+                  252,
+                  236,
+                  228,
+                  236,
+                  244,
+                  197,
+                  20,
+                  81,
+                  64,
+                  207
+                ],
+                "count" : 15
+              },
+              "dimensions" : {
+                "width" : 640,
+                "height" : 640
+              },
+              "progressiveSizes" : [
+
+              ],
+              "isPersonal" : false,
+              "resource" : {
+                "datacenterId" : 1,
+                "photoId" : 5131960391276629046,
+                "sizeSpec" : "fullSize"
+              },
+              "typeHint" : "generic",
+              "hasVideo" : false
+            }
+          ],
+          "botInfo" : {
+            "flags" : {
+              "rawValue" : 2
+            }
+          },
+          "flags" : {
+            "rawValue" : 0
+          },
+          "storiesHidden" : false,
+          "subscriberCount" : 18622,
+          "id" : {
+            "id" : {
+              "rawValue" : 8487886432
+            },
+            "namespace" : {
+              "rawValue" : 0
+            }
+          },
+          "usernames" : [
+
+          ],
+          "firstName" : "â¤ï¸Punhetinderð¥",
+          "username" : "pntcclub3_bot"
+        }
+      }
+    ]
+  },
+  "customTags" : [
+
+  ],
+  "associatedStories" : {
+
+  },
+  "author" : {
+    "photo" : [
+      {
+        "dimensions" : {
+          "width" : 80,
+          "height" : 80
+        },
+        "progressiveSizes" : [
+
+        ],
+        "isPersonal" : false,
+        "typeHint" : "generic",
+        "immediateThumbnailData" : {
+          "count" : 15,
+          "pointer" : {
+            "pointerValue" : 5758906688
+          },
+          "bytes" : [
+            1,
+            8,
+            8,
+            212,
+            249,
+            252,
+            236,
+            228,
+            236,
+            244,
+            197,
+            20,
+            81,
+            64,
+            207
+          ]
+        },
+        "resource" : {
+          "sizeSpec" : "small",
+          "datacenterId" : 1,
+          "photoId" : 5131960391276629046
+        },
+        "hasVideo" : false
+      },
+      {
+        "resource" : {
+          "sizeSpec" : "fullSize",
+          "datacenterId" : 1,
+          "photoId" : 5131960391276629046
+        },
+        "immediateThumbnailData" : {
+          "count" : 15,
+          "pointer" : {
+            "pointerValue" : 5758908288
+          },
+          "bytes" : [
+            1,
+            8,
+            8,
+            212,
+            249,
+            252,
+            236,
+            228,
+            236,
+            244,
+            197,
+            20,
+            81,
+            64,
+            207
+          ]
+        },
+        "dimensions" : {
+          "height" : 640,
+          "width" : 640
+        },
+        "hasVideo" : false,
+        "typeHint" : "generic",
+        "progressiveSizes" : [
+
+        ],
+        "isPersonal" : false
+      }
+    ],
+    "storiesHidden" : false,
+    "accessHash" : {
+      "personal" : -4876528063956882852
+    },
+    "firstName" : "â¤ï¸Punhetinderð¥",
+    "username" : "pntcclub3_bot",
+    "id" : {
+      "namespace" : {
+        "rawValue" : 0
+      },
+      "id" : {
+        "rawValue" : 8487886432
+      }
+    },
+    "botInfo" : {
+      "flags" : {
+        "rawValue" : 2
+      }
+    },
+    "flags" : {
+      "rawValue" : 0
+    },
+    "usernames" : [
+
+    ],
+    "subscriberCount" : 18622
+  },
+  "id" : {
+    "namespace" : 0,
+    "peerId" : {
+      "namespace" : {
+        "rawValue" : 0
+      },
+      "id" : {
+        "rawValue" : 8487886432
+      }
+    },
+    "id" : 156938
+  },
+  "associatedMessageIds" : [
+
+  ],
+  "media" : [
+
+  ],
+  "associatedMedia" : {
+
+  },
+  "globalTags" : {
+    "rawValue" : 0
+  },
+  "text" : "â¤ï¸ Punhetinder ð¥\n\nð· VocÃª ainda nÃ£o tem fotos aprovadas.\n\nð Envie sua primeira foto!",
+  "attributes" : [
+    {
+      "entities" : [
+        {
+          "type" : "Bold",
+          "range" : {
+            "lowerBound" : 0,
+            "upperBound" : 17
+          }
+        }
+      ]
+    }
+  ],
+  "flags" : {
+    "rawValue" : 68
+  },
+  "stableId" : 2193,
+  "localTags" : {
+    "rawValue" : 0
+  },
+  "timestamp" : 1779759008,
+  "tags" : {
+    "rawValue" : 0
+  },
+  "stableVersion" : 0,
+  "associatedMessages" : {
+    "items" : [
+
+    ]
+  }
+}

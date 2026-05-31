@@ -1,0 +1,248 @@
+{
+  "associatedMedia" : {
+
+  },
+  "associatedMessageIds" : [
+
+  ],
+  "associatedMessages" : {
+    "items" : [
+
+    ]
+  },
+  "associatedStories" : {
+
+  },
+  "attributes" : [
+    {
+      "entities" : [
+
+      ]
+    },
+    {
+      "flags" : {
+        "rawValue" : 8
+      },
+      "rows" : [
+        {
+          "buttons" : [
+            {
+              "action" : {
+                "callback" : {
+                  "data" : {
+                    "capacity" : 13,
+                    "freeWhenDone" : true,
+                    "length" : 13,
+                    "memory" : {
+                      "pointerValue" : 5864059008
+                    },
+                    "offset" : 0
+                  },
+                  "requiresPassword" : false
+                }
+              },
+              "title" : "🏠 Menu"
+            },
+            {
+              "action" : {
+                "callback" : {
+                  "data" : {
+                    "capacity" : 13,
+                    "freeWhenDone" : true,
+                    "length" : 13,
+                    "memory" : {
+                      "pointerValue" : 5864052496
+                    },
+                    "offset" : 0
+                  },
+                  "requiresPassword" : false
+                }
+              },
+              "title" : "📸 Ver fotos"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "author" : {
+    "accessHash" : {
+      "personal" : -4876528063956882852
+    },
+    "botInfo" : {
+      "flags" : {
+        "rawValue" : 2
+      }
+    },
+    "firstName" : "❤️Punhetinder🔥",
+    "flags" : {
+      "rawValue" : 0
+    },
+    "id" : {
+      "id" : {
+        "rawValue" : 8487886432
+      },
+      "namespace" : {
+        "rawValue" : 0
+      }
+    },
+    "photo" : [
+      {
+        "dimensions" : {
+          "height" : 80,
+          "width" : 80
+        },
+        "hasVideo" : false,
+        "immediateThumbnailData" : "",
+        "isPersonal" : false,
+        "progressiveSizes" : [
+
+        ],
+        "resource" : {
+          "datacenterId" : 1,
+          "photoId" : 5131960391276629046,
+          "sizeSpec" : "small"
+        },
+        "typeHint" : "generic"
+      },
+      {
+        "dimensions" : {
+          "height" : 640,
+          "width" : 640
+        },
+        "hasVideo" : false,
+        "immediateThumbnailData" : "",
+        "isPersonal" : false,
+        "progressiveSizes" : [
+
+        ],
+        "resource" : {
+          "datacenterId" : 1,
+          "photoId" : 5131960391276629046,
+          "sizeSpec" : "fullSize"
+        },
+        "typeHint" : "generic"
+      }
+    ],
+    "storiesHidden" : false,
+    "subscriberCount" : 18622,
+    "username" : "pntcclub3_bot",
+    "usernames" : [
+
+    ]
+  },
+  "customTags" : [
+
+  ],
+  "flags" : {
+    "rawValue" : 68
+  },
+  "globalTags" : {
+    "rawValue" : 0
+  },
+  "id" : {
+    "id" : 164647,
+    "namespace" : 0,
+    "peerId" : {
+      "id" : {
+        "rawValue" : 8487886432
+      },
+      "namespace" : {
+        "rawValue" : 0
+      }
+    }
+  },
+  "localTags" : {
+    "rawValue" : 0
+  },
+  "media" : [
+
+  ],
+  "peers" : {
+    "items" : [
+      {
+        ".0" : {
+          "id" : {
+            "rawValue" : 8487886432
+          },
+          "namespace" : {
+            "rawValue" : 0
+          }
+        },
+        ".1" : {
+          "accessHash" : {
+            "personal" : -4876528063956882852
+          },
+          "botInfo" : {
+            "flags" : {
+              "rawValue" : 2
+            }
+          },
+          "firstName" : "❤️Punhetinder🔥",
+          "flags" : {
+            "rawValue" : 0
+          },
+          "id" : {
+            "id" : {
+              "rawValue" : 8487886432
+            },
+            "namespace" : {
+              "rawValue" : 0
+            }
+          },
+          "photo" : [
+            {
+              "dimensions" : {
+                "height" : 80,
+                "width" : 80
+              },
+              "hasVideo" : false,
+              "immediateThumbnailData" : "",
+              "isPersonal" : false,
+              "progressiveSizes" : [
+
+              ],
+              "resource" : {
+                "datacenterId" : 1,
+                "photoId" : 5131960391276629046,
+                "sizeSpec" : "small"
+              },
+              "typeHint" : "generic"
+            },
+            {
+              "dimensions" : {
+                "height" : 640,
+                "width" : 640
+              },
+              "hasVideo" : false,
+              "immediateThumbnailData" : "",
+              "isPersonal" : false,
+              "progressiveSizes" : [
+
+              ],
+              "resource" : {
+                "datacenterId" : 1,
+                "photoId" : 5131960391276629046,
+                "sizeSpec" : "fullSize"
+              },
+              "typeHint" : "generic"
+            }
+          ],
+          "storiesHidden" : false,
+          "subscriberCount" : 18622,
+          "username" : "pntcclub3_bot",
+          "usernames" : [
+
+          ]
+        }
+      }
+    ]
+  },
+  "stableId" : 118360,
+  "stableVersion" : 0,
+  "tags" : {
+    "rawValue" : 0
+  },
+  "text" : "✅ Sua mídia foi publicada! ID: #13710",
+  "timestamp" : 1780204588
+}

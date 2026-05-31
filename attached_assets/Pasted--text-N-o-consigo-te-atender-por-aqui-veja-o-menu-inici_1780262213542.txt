@@ -1,0 +1,304 @@
+{
+  "text" : "❓ Não consigo te atender por aqui, veja o menu inicial clicando em /start ou se tiver dúvidas, chame o @fabiowadmin",
+  "associatedMessageIds" : [
+
+  ],
+  "stableId" : 2341,
+  "globalTags" : {
+    "rawValue" : 0
+  },
+  "associatedMessages" : {
+    "items" : [
+
+    ]
+  },
+  "associatedStories" : {
+
+  },
+  "author" : {
+    "subscriberCount" : 18622,
+    "storiesHidden" : false,
+    "id" : {
+      "namespace" : {
+        "rawValue" : 0
+      },
+      "id" : {
+        "rawValue" : 8487886432
+      }
+    },
+    "usernames" : [
+
+    ],
+    "firstName" : "❤️Punhetinder🔥",
+    "flags" : {
+      "rawValue" : 0
+    },
+    "username" : "pntcclub3_bot",
+    "photo" : [
+      {
+        "dimensions" : {
+          "width" : 80,
+          "height" : 80
+        },
+        "typeHint" : "generic",
+        "progressiveSizes" : [
+
+        ],
+        "immediateThumbnailData" : {
+          "count" : 15,
+          "pointer" : {
+            "pointerValue" : 5758898304
+          },
+          "bytes" : [
+            1,
+            8,
+            8,
+            212,
+            249,
+            252,
+            236,
+            228,
+            236,
+            244,
+            197,
+            20,
+            81,
+            64,
+            207
+          ]
+        },
+        "resource" : {
+          "datacenterId" : 1,
+          "photoId" : 5131960391276629046,
+          "sizeSpec" : "small"
+        },
+        "hasVideo" : false,
+        "isPersonal" : false
+      },
+      {
+        "isPersonal" : false,
+        "typeHint" : "generic",
+        "hasVideo" : false,
+        "progressiveSizes" : [
+
+        ],
+        "dimensions" : {
+          "width" : 640,
+          "height" : 640
+        },
+        "resource" : {
+          "sizeSpec" : "fullSize",
+          "datacenterId" : 1,
+          "photoId" : 5131960391276629046
+        },
+        "immediateThumbnailData" : {
+          "bytes" : [
+            1,
+            8,
+            8,
+            212,
+            249,
+            252,
+            236,
+            228,
+            236,
+            244,
+            197,
+            20,
+            81,
+            64,
+            207
+          ],
+          "pointer" : {
+            "pointerValue" : 5758902320
+          },
+          "count" : 15
+        }
+      }
+    ],
+    "accessHash" : {
+      "personal" : -4876528063956882852
+    },
+    "botInfo" : {
+      "flags" : {
+        "rawValue" : 2
+      }
+    }
+  },
+  "media" : [
+
+  ],
+  "peers" : {
+    "items" : [
+      {
+        ".0" : {
+          "namespace" : {
+            "rawValue" : 0
+          },
+          "id" : {
+            "rawValue" : 8487886432
+          }
+        },
+        ".1" : {
+          "botInfo" : {
+            "flags" : {
+              "rawValue" : 2
+            }
+          },
+          "accessHash" : {
+            "personal" : -4876528063956882852
+          },
+          "flags" : {
+            "rawValue" : 0
+          },
+          "usernames" : [
+
+          ],
+          "storiesHidden" : false,
+          "firstName" : "❤️Punhetinder🔥",
+          "subscriberCount" : 18622,
+          "username" : "pntcclub3_bot",
+          "photo" : [
+            {
+              "dimensions" : {
+                "height" : 80,
+                "width" : 80
+              },
+              "immediateThumbnailData" : {
+                "count" : 15,
+                "pointer" : {
+                  "pointerValue" : 5758898304
+                },
+                "bytes" : [
+                  1,
+                  8,
+                  8,
+                  212,
+                  249,
+                  252,
+                  236,
+                  228,
+                  236,
+                  244,
+                  197,
+                  20,
+                  81,
+                  64,
+                  207
+                ]
+              },
+              "progressiveSizes" : [
+
+              ],
+              "resource" : {
+                "sizeSpec" : "small",
+                "datacenterId" : 1,
+                "photoId" : 5131960391276629046
+              },
+              "hasVideo" : false,
+              "typeHint" : "generic",
+              "isPersonal" : false
+            },
+            {
+              "dimensions" : {
+                "height" : 640,
+                "width" : 640
+              },
+              "resource" : {
+                "photoId" : 5131960391276629046,
+                "datacenterId" : 1,
+                "sizeSpec" : "fullSize"
+              },
+              "progressiveSizes" : [
+
+              ],
+              "immediateThumbnailData" : {
+                "pointer" : {
+                  "pointerValue" : 5758902320
+                },
+                "count" : 15,
+                "bytes" : [
+                  1,
+                  8,
+                  8,
+                  212,
+                  249,
+                  252,
+                  236,
+                  228,
+                  236,
+                  244,
+                  197,
+                  20,
+                  81,
+                  64,
+                  207
+                ]
+              },
+              "typeHint" : "generic",
+              "isPersonal" : false,
+              "hasVideo" : false
+            }
+          ],
+          "id" : {
+            "id" : {
+              "rawValue" : 8487886432
+            },
+            "namespace" : {
+              "rawValue" : 0
+            }
+          }
+        }
+      }
+    ]
+  },
+  "timestamp" : 1780262184,
+  "flags" : {
+    "rawValue" : 68
+  },
+  "localTags" : {
+    "rawValue" : 0
+  },
+  "id" : {
+    "peerId" : {
+      "id" : {
+        "rawValue" : 8487886432
+      },
+      "namespace" : {
+        "rawValue" : 0
+      }
+    },
+    "id" : 165624,
+    "namespace" : 0
+  },
+  "customTags" : [
+
+  ],
+  "attributes" : [
+    {
+      "entities" : [
+        {
+          "range" : {
+            "lowerBound" : 67,
+            "upperBound" : 73
+          },
+          "type" : "BotCommand"
+        },
+        {
+          "range" : {
+            "lowerBound" : 103,
+            "upperBound" : 115
+          },
+          "type" : "Mention"
+        }
+      ]
+    }
+  ],
+  "associatedMedia" : {
+
+  },
+  "stableVersion" : 0,
+  "tags" : {
+    "rawValue" : 0
+  }
+}

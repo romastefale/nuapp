@@ -1,0 +1,268 @@
+{
+  "associatedMedia" : {
+
+  },
+  "associatedMessageIds" : [
+
+  ],
+  "associatedMessages" : {
+    "items" : [
+
+    ]
+  },
+  "associatedStories" : {
+
+  },
+  "attributes" : [
+    {
+      "entities" : [
+        {
+          "range" : {
+            "lowerBound" : 0,
+            "upperBound" : 17
+          },
+          "type" : "Bold"
+        },
+        {
+          "range" : {
+            "lowerBound" : 62,
+            "upperBound" : 68
+          },
+          "type" : "Code"
+        },
+        {
+          "range" : {
+            "lowerBound" : 146,
+            "upperBound" : 155
+          },
+          "type" : "Bold"
+        }
+      ]
+    },
+    {
+      "flags" : {
+        "rawValue" : 8
+      },
+      "rows" : [
+        {
+          "buttons" : [
+            {
+              "action" : {
+                "callback" : {
+                  "data" : {
+                    "capacity" : 13,
+                    "freeWhenDone" : true,
+                    "length" : 13,
+                    "memory" : {
+                      "pointerValue" : 5891897744
+                    },
+                    "offset" : 0
+                  },
+                  "requiresPassword" : false
+                }
+              },
+              "title" : "📸 Ver fotos"
+            },
+            {
+              "action" : {
+                "callback" : {
+                  "data" : {
+                    "capacity" : 13,
+                    "freeWhenDone" : true,
+                    "length" : 13,
+                    "memory" : {
+                      "pointerValue" : 5891897584
+                    },
+                    "offset" : 0
+                  },
+                  "requiresPassword" : false
+                }
+              },
+              "title" : "🏠 Menu"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "author" : {
+    "accessHash" : {
+      "personal" : -4876528063956882852
+    },
+    "botInfo" : {
+      "flags" : {
+        "rawValue" : 2
+      }
+    },
+    "firstName" : "❤️Punhetinder🔥",
+    "flags" : {
+      "rawValue" : 0
+    },
+    "id" : {
+      "id" : {
+        "rawValue" : 8487886432
+      },
+      "namespace" : {
+        "rawValue" : 0
+      }
+    },
+    "photo" : [
+      {
+        "dimensions" : {
+          "height" : 80,
+          "width" : 80
+        },
+        "hasVideo" : false,
+        "immediateThumbnailData" : "",
+        "isPersonal" : false,
+        "progressiveSizes" : [
+
+        ],
+        "resource" : {
+          "datacenterId" : 1,
+          "photoId" : 5131960391276629046,
+          "sizeSpec" : "small"
+        },
+        "typeHint" : "generic"
+      },
+      {
+        "dimensions" : {
+          "height" : 640,
+          "width" : 640
+        },
+        "hasVideo" : false,
+        "immediateThumbnailData" : "",
+        "isPersonal" : false,
+        "progressiveSizes" : [
+
+        ],
+        "resource" : {
+          "datacenterId" : 1,
+          "photoId" : 5131960391276629046,
+          "sizeSpec" : "fullSize"
+        },
+        "typeHint" : "generic"
+      }
+    ],
+    "storiesHidden" : false,
+    "subscriberCount" : 18622,
+    "username" : "pntcclub3_bot",
+    "usernames" : [
+
+    ]
+  },
+  "customTags" : [
+
+  ],
+  "flags" : {
+    "rawValue" : 68
+  },
+  "globalTags" : {
+    "rawValue" : 0
+  },
+  "id" : {
+    "id" : 164648,
+    "namespace" : 0,
+    "peerId" : {
+      "id" : {
+        "rawValue" : 8487886432
+      },
+      "namespace" : {
+        "rawValue" : 0
+      }
+    }
+  },
+  "localTags" : {
+    "rawValue" : 0
+  },
+  "media" : [
+
+  ],
+  "peers" : {
+    "items" : [
+      {
+        ".0" : {
+          "id" : {
+            "rawValue" : 8487886432
+          },
+          "namespace" : {
+            "rawValue" : 0
+          }
+        },
+        ".1" : {
+          "accessHash" : {
+            "personal" : -4876528063956882852
+          },
+          "botInfo" : {
+            "flags" : {
+              "rawValue" : 2
+            }
+          },
+          "firstName" : "❤️Punhetinder🔥",
+          "flags" : {
+            "rawValue" : 0
+          },
+          "id" : {
+            "id" : {
+              "rawValue" : 8487886432
+            },
+            "namespace" : {
+              "rawValue" : 0
+            }
+          },
+          "photo" : [
+            {
+              "dimensions" : {
+                "height" : 80,
+                "width" : 80
+              },
+              "hasVideo" : false,
+              "immediateThumbnailData" : "",
+              "isPersonal" : false,
+              "progressiveSizes" : [
+
+              ],
+              "resource" : {
+                "datacenterId" : 1,
+                "photoId" : 5131960391276629046,
+                "sizeSpec" : "small"
+              },
+              "typeHint" : "generic"
+            },
+            {
+              "dimensions" : {
+                "height" : 640,
+                "width" : 640
+              },
+              "hasVideo" : false,
+              "immediateThumbnailData" : "",
+              "isPersonal" : false,
+              "progressiveSizes" : [
+
+              ],
+              "resource" : {
+                "datacenterId" : 1,
+                "photoId" : 5131960391276629046,
+                "sizeSpec" : "fullSize"
+              },
+              "typeHint" : "generic"
+            }
+          ],
+          "storiesHidden" : false,
+          "subscriberCount" : 18622,
+          "username" : "pntcclub3_bot",
+          "usernames" : [
+
+          ]
+        }
+      }
+    ]
+  },
+  "stableId" : 118361,
+  "stableVersion" : 0,
+  "tags" : {
+    "rawValue" : 0
+  },
+  "text" : "❤️ Punhetinder 🔥\n\n✅ Sua foto/vídeo foi aprovada!\n\n🔑 Código: #13710\n💘 Agora outros usuários podem curtir e dar match com você! 🔥\n\n📸 Clique em Ver fotos no menu para navegar pelas fotos!",
+  "timestamp" : 1780204589
+}

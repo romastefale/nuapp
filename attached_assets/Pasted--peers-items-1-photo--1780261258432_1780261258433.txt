@@ -1,0 +1,330 @@
+{
+  "peers" : {
+    "items" : [
+      {
+        ".1" : {
+          "photo" : [
+            {
+              "progressiveSizes" : [
+
+              ],
+              "resource" : {
+                "sizeSpec" : "small",
+                "datacenterId" : 1,
+                "photoId" : 5131960391276629046
+              },
+              "isPersonal" : false,
+              "immediateThumbnailData" : {
+                "count" : 15,
+                "pointer" : {
+                  "pointerValue" : 5758903968
+                },
+                "bytes" : [
+                  1,
+                  8,
+                  8,
+                  212,
+                  249,
+                  252,
+                  236,
+                  228,
+                  236,
+                  244,
+                  197,
+                  20,
+                  81,
+                  64,
+                  207
+                ]
+              },
+              "typeHint" : "generic",
+              "dimensions" : {
+                "height" : 80,
+                "width" : 80
+              },
+              "hasVideo" : false
+            },
+            {
+              "resource" : {
+                "photoId" : 5131960391276629046,
+                "datacenterId" : 1,
+                "sizeSpec" : "fullSize"
+              },
+              "immediateThumbnailData" : {
+                "count" : 15,
+                "bytes" : [
+                  1,
+                  8,
+                  8,
+                  212,
+                  249,
+                  252,
+                  236,
+                  228,
+                  236,
+                  244,
+                  197,
+                  20,
+                  81,
+                  64,
+                  207
+                ],
+                "pointer" : {
+                  "pointerValue" : 5758897952
+                }
+              },
+              "isPersonal" : false,
+              "progressiveSizes" : [
+
+              ],
+              "dimensions" : {
+                "height" : 640,
+                "width" : 640
+              },
+              "typeHint" : "generic",
+              "hasVideo" : false
+            }
+          ],
+          "firstName" : "â¤ï¸Punhetinderð¥",
+          "botInfo" : {
+            "flags" : {
+              "rawValue" : 2
+            }
+          },
+          "accessHash" : {
+            "personal" : -4876528063956882852
+          },
+          "username" : "pntcclub3_bot",
+          "flags" : {
+            "rawValue" : 0
+          },
+          "subscriberCount" : 18622,
+          "usernames" : [
+
+          ],
+          "id" : {
+            "id" : {
+              "rawValue" : 8487886432
+            },
+            "namespace" : {
+              "rawValue" : 0
+            }
+          },
+          "storiesHidden" : false
+        },
+        ".0" : {
+          "id" : {
+            "rawValue" : 8487886432
+          },
+          "namespace" : {
+            "rawValue" : 0
+          }
+        }
+      }
+    ]
+  },
+  "text" : "ð¡ Dicas Ãteis\n\nð Seu nome sÃ³ aparece linkÃ¡vel para o seu perfil se vocÃª permitir nas suas configuraÃ§Ãµes de privacidade.\nâ Isso nÃ£o impede que outros vejam suas fotos ou entrem em contato com vocÃª pelo bot!\nð Envie sua foto com uma legenda com as informaÃ§Ãµes que preferir, como: posiÃ§Ã£o sexual preferida, idade ou cidade.\nð Para manter-se seguro, jamais informe Whatsapp e oculte seu nÃºmero de telefone nas configuraÃ§Ãµes.",
+  "associatedStories" : {
+
+  },
+  "timestamp" : 1780261160,
+  "media" : [
+
+  ],
+  "tags" : {
+    "rawValue" : 0
+  },
+  "stableVersion" : 0,
+  "id" : {
+    "namespace" : 0,
+    "id" : 165619,
+    "peerId" : {
+      "namespace" : {
+        "rawValue" : 0
+      },
+      "id" : {
+        "rawValue" : 8487886432
+      }
+    }
+  },
+  "stableId" : 2011,
+  "customTags" : [
+
+  ],
+  "author" : {
+    "username" : "pntcclub3_bot",
+    "botInfo" : {
+      "flags" : {
+        "rawValue" : 2
+      }
+    },
+    "photo" : [
+      {
+        "progressiveSizes" : [
+
+        ],
+        "resource" : {
+          "sizeSpec" : "small",
+          "datacenterId" : 1,
+          "photoId" : 5131960391276629046
+        },
+        "dimensions" : {
+          "height" : 80,
+          "width" : 80
+        },
+        "hasVideo" : false,
+        "immediateThumbnailData" : {
+          "pointer" : {
+            "pointerValue" : 5758903968
+          },
+          "bytes" : [
+            1,
+            8,
+            8,
+            212,
+            249,
+            252,
+            236,
+            228,
+            236,
+            244,
+            197,
+            20,
+            81,
+            64,
+            207
+          ],
+          "count" : 15
+        },
+        "typeHint" : "generic",
+        "isPersonal" : false
+      },
+      {
+        "typeHint" : "generic",
+        "hasVideo" : false,
+        "resource" : {
+          "sizeSpec" : "fullSize",
+          "photoId" : 5131960391276629046,
+          "datacenterId" : 1
+        },
+        "dimensions" : {
+          "width" : 640,
+          "height" : 640
+        },
+        "progressiveSizes" : [
+
+        ],
+        "isPersonal" : false,
+        "immediateThumbnailData" : {
+          "bytes" : [
+            1,
+            8,
+            8,
+            212,
+            249,
+            252,
+            236,
+            228,
+            236,
+            244,
+            197,
+            20,
+            81,
+            64,
+            207
+          ],
+          "count" : 15,
+          "pointer" : {
+            "pointerValue" : 5758897952
+          }
+        }
+      }
+    ],
+    "id" : {
+      "id" : {
+        "rawValue" : 8487886432
+      },
+      "namespace" : {
+        "rawValue" : 0
+      }
+    },
+    "accessHash" : {
+      "personal" : -4876528063956882852
+    },
+    "firstName" : "â¤ï¸Punhetinderð¥",
+    "flags" : {
+      "rawValue" : 0
+    },
+    "subscriberCount" : 18622,
+    "usernames" : [
+
+    ],
+    "storiesHidden" : false
+  },
+  "associatedMessages" : {
+    "items" : [
+
+    ]
+  },
+  "attributes" : [
+    {
+      "entities" : [
+        {
+          "type" : "Bold",
+          "range" : {
+            "lowerBound" : 3,
+            "upperBound" : 14
+          }
+        }
+      ]
+    },
+    {
+      "rows" : [
+        {
+          "buttons" : [
+            {
+              "title" : "ð  Menu",
+              "action" : {
+                "callback" : {
+                  "data" : {
+                    "string" : "show_commands"
+                  },
+                  "requiresPassword" : false
+                }
+              }
+            },
+            {
+              "action" : {
+                "callback" : {
+                  "requiresPassword" : false,
+                  "data" : {
+                    "string" : "browse_photos"
+                  }
+                }
+              },
+              "title" : "ð¸ Ver fotos"
+            }
+          ]
+        }
+      ],
+      "flags" : {
+        "rawValue" : 8
+      }
+    }
+  ],
+  "associatedMessageIds" : [
+
+  ],
+  "flags" : {
+    "rawValue" : 68
+  },
+  "associatedMedia" : {
+
+  },
+  "globalTags" : {
+    "rawValue" : 0
+  },
+  "localTags" : {
+    "rawValue" : 0
+  }
+}
