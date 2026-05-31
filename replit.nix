@@ -1,0 +1,33 @@
+{pkgs}: {
+  deps = [
+    pkgs.glib
+    pkgs.freetype
+    pkgs.fontconfig
+    pkgs.xorg.libXi
+    pkgs.xorg.libXtst
+    pkgs.xorg.libXrender
+    pkgs.libgbm
+    pkgs.libGL
+    pkgs.xorg.libxcb
+    pkgs.xorg.libXrandr
+    pkgs.xorg.libXfixes
+    pkgs.xorg.libXext
+    pkgs.xorg.libXdamage
+    pkgs.xorg.libXcomposite
+    pkgs.xorg.libX11
+    pkgs.alsa-lib
+    pkgs.cairo
+    pkgs.pango
+    pkgs.libxkbcommon
+    pkgs.expat
+    pkgs.mesa
+    pkgs.libdrm
+    pkgs.dbus
+    pkgs.cups
+    pkgs.at-spi2-core
+    pkgs.at-spi2-atk
+    pkgs.atk
+    pkgs.nspr
+    pkgs.nss
+  ];
+}

@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "ClwHIyYanhm7xsSMmM8ZT"
+uri = "file://Infografico_Moderacao_Bot.pdf"
+type = "pdf"
+title = "Infográfico — Moderação do Bot (PDF)"

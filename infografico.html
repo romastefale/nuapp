@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moderação do Bot — pntcclub3_bot · Infográfico</title>
+<style>
+  :root{
+    --bg:#0a0e1a;
+    --panel:#111726;
+    --panel-2:#0d1320;
+    --ink:#e8edf7;
+    --muted:#8a96ad;
+    --line:#1e2740;
+    --green:#37d39a;
+    --green-dim:#163a2e;
+    --red:#ff5d6c;
+    --red-dim:#3a1620;
+    --amber:#ffb938;
+    --amber-dim:#3a2e10;
+    --blue:#5aa9ff;
+    --mono:"SFMono-Regular",ui-monospace,"JetBrains Mono","Roboto Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:radial-gradient(1200px 700px at 50% -10%,#15203a 0%,var(--bg) 55%);
+    color:var(--ink);font-family:var(--sans);line-height:1.5;
+    -webkit-font-smoothing:antialiased;padding:0 0 80px;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+
+  /* HEADER */
+  header.hero{padding:54px 0 34px;text-align:center}
+  .kicker{font:600 12px/1 var(--mono);letter-spacing:.28em;text-transform:uppercase;color:var(--blue);
+    border:1px solid var(--line);border-radius:999px;padding:8px 16px;display:inline-block;background:var(--panel-2)}
+  h1{font-size:clamp(28px,4.5vw,46px);margin:20px 0 8px;letter-spacing:-.02em;font-weight:800}
+  .sub{color:var(--muted);font-size:16px;max-width:720px;margin:0 auto}
+  .botbar{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:26px}
+  .chip{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);
+    border-radius:12px;padding:10px 14px;font-size:14px}
+  .chip b{font-family:var(--mono);font-size:13px}
+  .chip .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+
+  /* SECTION HEADERS */
+  .part{margin-top:60px}
+  .part-head{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+  .part-num{flex:none;width:54px;height:54px;border-radius:14px;display:grid;place-items:center;
+    font:800 22px/1 var(--mono)}
+  .p1 .part-num{background:var(--green-dim);color:var(--green);border:1px solid #1f5a45}
+  .p2 .part-num{background:var(--amber-dim);color:var(--amber);border:1px solid #5a4514}
+  .part-head h2{font-size:clamp(22px,3vw,30px);margin:0;letter-spacing:-.01em}
+  .part-head .tag{font:600 11px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;
+    padding:6px 11px;border-radius:999px}
+  .p1 .tag{background:var(--green-dim);color:var(--green)}
+  .p2 .tag{background:var(--amber-dim);color:var(--amber);border:1px dashed #7a5e1c}
+  .part-desc{color:var(--muted);margin:0 0 26px;max-width:840px}
+
+  /* GRID + CARDS */
+  .grid{display:grid;gap:18px}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:820px){.g2,.g3{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px}
+  .card h3{margin:0 0 16px;font-size:13px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);
+    font-weight:700}
+  .kv{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px dashed var(--line);
+    font-size:14px}
+  .kv:last-child{border-bottom:0}
+  .kv .k{color:var(--muted)}
+  .kv .v{font-family:var(--mono);font-size:13px;text-align:right;word-break:break-all}
+  .v.title-raw{font-family:var(--sans);font-size:15px}
+
+  /* BITMASK HERO */
+  .mask{background:linear-gradient(180deg,var(--panel) 0%,var(--panel-2) 100%);
+    border:1px solid var(--line);border-radius:16px;padding:28px;text-align:center}
+  .mask .big{font:800 64px/1 var(--mono);color:var(--green);letter-spacing:-.02em}
+  .mask .big small{font-size:18px;color:var(--muted);font-weight:600}
+  .eq{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:18px}
+  .eq .op{font:700 26px/1 var(--mono);color:var(--muted)}
+  .bitbox{background:var(--green-dim);border:1px solid #1f5a45;border-radius:12px;padding:12px 16px;min-width:140px}
+  .bitbox .val{font:800 26px/1 var(--mono);color:var(--green)}
+  .bitbox .name{font-size:12px;color:var(--ink);margin-top:6px}
+  .bitbox .pos{font:600 10px/1 var(--mono);color:var(--muted);margin-top:4px;letter-spacing:.1em}
+
+  /* BIT STRIP */
+  .strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:24px}
+  .bit{width:38px;text-align:center}
+  .bit .b{height:38px;border-radius:8px;display:grid;place-items:center;font:700 15px/1 var(--mono);
+    border:1px solid var(--line);background:var(--panel-2);color:var(--muted)}
+  .bit.on .b{background:var(--green-dim);color:var(--green);border-color:#1f5a45}
+  .bit .p{font:600 9px/1 var(--mono);color:var(--muted);margin-top:5px}
+
+  /* TABLES */
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:700}
+  td.num,th.num{font-family:var(--mono);white-space:nowrap;text-align:right}
+  tr:last-child td{border-bottom:0}
+  .pill{display:inline-flex;align-items:center;gap:6px;font:700 11px/1 var(--mono);padding:5px 9px;border-radius:999px}
+  .pill.on{background:var(--green-dim);color:var(--green)}
+  .pill.off{background:var(--red-dim);color:var(--red)}
+  .pill.hyp{background:var(--amber-dim);color:var(--amber)}
+  tr.has td{background:rgba(55,211,154,.05)}
+  .tablecard{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .tablecard .cap{padding:16px 18px;border-bottom:1px solid var(--line);font-size:13px;color:var(--muted)}
+  .tablecard .cap b{color:var(--ink)}
+
+  /* CALLOUT */
+  .callout{border-radius:16px;padding:22px 24px;margin-top:18px;border:1px solid}
+  .callout.ok{background:var(--green-dim);border-color:#1f5a45}
+  .callout.warn{background:var(--amber-dim);border-color:#7a5e1c}
+  .callout h4{margin:0 0 8px;font-size:15px}
+  .callout p{margin:0;color:var(--ink);font-size:14px}
+  .callout.warn p{color:#f3d79b}
+  .big-warn{display:flex;gap:14px;align-items:flex-start}
+  .big-warn .ic{font-size:26px;line-height:1}
+
+  /* DIVIDER */
+  .div{height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent);margin:14px 0}
+
+  footer{margin-top:64px;padding-top:28px;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px}
+  footer code{font-family:var(--mono);color:#aeb9d0;background:var(--panel);padding:2px 6px;border-radius:6px;
+    border:1px solid var(--line);font-size:11.5px}
+  footer .files{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;margin:18px 0 4px;font-size:13px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .dot.g{background:var(--green)}.dot.r{background:var(--red)}.dot.a{background:var(--amber)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ HERO ============ -->
+  <header class="hero">
+    <span class="kicker">Modelo de permissões · Telegram</span>
+    <h1>Poderes de Moderação do Bot</h1>
+    <p class="sub">Documentação visual do que o bot <b>@pntcclub3_bot</b> realmente pode fazer no grupo — e do que ele <em>poderia</em> fazer caso tivesse todas as permissões de administrador.</p>
+    <div class="botbar">
+      <div class="chip"><span class="lbl">Bot</span> <b>@pntcclub3_bot</b></div>
+      <div class="chip"><span class="lbl">Nome</span> <b>❤️Punhetinder🔥</b></div>
+      <div class="chip"><span class="lbl">rank</span> <b>"bot"</b></div>
+      <div class="chip"><span class="lbl">Inscritos</span> <b>18 622</b></div>
+    </div>
+  </header>
+
+  <!-- ============ PARTE 1 ============ -->
+  <section class="part p1">
+    <div class="part-head">
+      <div class="part-num">1</div>
+      <h2>Realidade</h2>
+      <span class="tag">Dados confirmados</span>
+    </div>
+    <p class="part-desc">Tudo nesta seção foi extraído diretamente dos dumps anexados. Os mesmos valores de <code style="font-family:var(--mono)">adminRights</code> aparecem <b>idênticos em 3 arquivos distintos</b>, o que confirma a leitura.</p>
+
+    <!-- identidade -->
+    <div class="grid g2">
+      <div class="card">
+        <h3>🤖 Identidade do bot</h3>
+        <div class="kv"><span class="k">username</span><span class="v">pntcclub3_bot</span></div>
+        <div class="kv"><span class="k">firstName</span><span class="v title-raw">❤️Punhetinder🔥</span></div>
+        <div class="kv"><span class="k">id (namespace 0)</span><span class="v">8487886432</span></div>
+        <div class="kv"><span class="k">subscriberCount</span><span class="v">18622</span></div>
+        <div class="kv"><span class="k">botInfo</span><span class="v">presente (flags 2)</span></div>
+        <div class="kv"><span class="k">rank</span><span class="v">"bot"</span></div>
+      </div>
+      <div class="card">
+        <h3>👥 Grupo / peer</h3>
+        <div class="kv"><span class="k">id</span><span class="v">3798418006</span></div>
+        <div class="kv"><span class="k">namespace</span><span class="v">2</span></div>
+        <div class="kv"><span class="k">título</span><span class="v title-raw">🚨 𝐫𝐞𝐝𝐫סס𝐦 🚨</span></div>
+        <div class="kv"><span class="k">participationStatus</span><span class="v">member</span></div>
+        <div class="kv"><span class="k">tipo</span><span class="v">group</span></div>
+      </div>
+    </div>
+
+    <!-- bitmask -->
+    <div class="div"></div>
+    <div class="mask">
+      <h3 style="text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-size:13px;margin:0 0 14px;font-weight:700">Direitos de admin do bot · <code style="font-family:var(--mono)">adminRights.rights.rawValue</code></h3>
+      <div class="big">24 <small>= 0b11000</small></div>
+      <div class="eq">
+        <div class="bitbox">
+          <div class="val">8</div>
+          <div class="name">🗑️ Apagar mensagens</div>
+          <div class="pos">BIT 3 · delete_messages</div>
+        </div>
+        <div class="op">+</div>
+        <div class="bitbox">
+          <div class="val">16</div>
+          <div class="name">🚫 Banir / restringir</div>
+          <div class="pos">BIT 4 · ban_users</div>
+        </div>
+        <div class="op">=</div>
+        <div class="bitbox">
+          <div class="val">24</div>
+          <div class="name">Total dos direitos</div>
+          <div class="pos">2 poderes ativos</div>
+        </div>
+      </div>
+      <!-- bit strip -->
+      <div class="strip">
+        <div class="bit"><div class="b">0</div><div class="p">2⁰=1</div></div>
+        <div class="bit"><div class="b">0</div><div class="p">2¹=2</div></div>
+        <div class="bit"><div class="b">0</div><div class="p">2²=4</div></div>
+        <div class="bit on"><div class="b">1</div><div class="p">2³=8</div></div>
+        <div class="bit on"><div class="b">1</div><div class="p">2⁴=16</div></div>
+      </div>
+      <p style="color:var(--muted);font-size:12.5px;margin:18px 0 0">Lendo da direita para a esquerda, apenas os bits 3 e 4 estão ligados → 8 + 16 = <b style="color:var(--green)">24</b>.</p>
+    </div>
+
+    <!-- on / off -->
+    <div class="div"></div>
+    <div class="grid g2">
+      <div class="tablecard">
+        <div class="cap"><b style="color:var(--green)">✅ LIGADO</b> — o que o bot pode fazer</div>
+        <table>
+          <thead><tr><th>Permissão</th><th class="num">valor</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr class="has"><td>🗑️ Apagar mensagens<br><span style="color:var(--muted);font-size:12.5px">delete_messages</span></td><td class="num">8</td><td><span class="pill on">ON</span></td></tr>
+            <tr class="has"><td>🚫 Banir / restringir usuários<br><span style="color:var(--muted);font-size:12.5px">ban_users</span></td><td class="num">16</td><td><span class="pill on">ON</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tablecard">
+        <div class="cap"><b style="color:var(--red)">⛔ DESLIGADO</b> — porque o valor é exatamente 24</div>
+        <table>
+          <tbody>
+            <tr><td>Mudar informações do grupo</td><td class="num">1</td><td><span class="pill off">OFF</span></td></tr>
+            <tr><td>Convidar / adicionar usuários</td><td class="num">32</td><td><span class="pill off">OFF</span></td></tr>
+            <tr><td>Fixar mensagens</td><td class="num">128</td><td><span class="pill off">OFF</span></td></tr>
+            <tr><td>Adicionar / promover admins</td><td class="num">512</td><td><span class="pill off">OFF</span></td></tr>
+            <tr><td>Admin anônimo / oculto</td><td class="num">1024</td><td><span class="pill off">OFF</span></td></tr>
+            <tr><td>Gerenciar chamadas de voz/vídeo</td><td class="num">2048</td><td><span class="pill off">OFF</span></td></tr>
+            <tr><td>Gerenciar tópicos (fórum)</td><td class="num">8192</td><td><span class="pill off">OFF</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- defaultBannedRights context -->
+    <div class="div"></div>
+    <div class="card">
+      <h3>📌 Contexto — restrições aplicadas aos membros comuns <code style="font-family:var(--mono)">defaultBannedRights</code></h3>
+      <p style="color:var(--muted);font-size:13.5px;margin:0 0 16px">Estes valores <b>não se aplicam ao bot</b>: descrevem o que um membro comum do grupo está proibido de fazer. Exibidos apenas como contexto.</p>
+      <div class="grid g2">
+        <div>
+          <div class="kv"><span class="k">rawValue</span><span class="v" style="color:var(--amber)">91915648</span></div>
+          <div class="kv"><span class="k">untilDate</span><span class="v">2147483647</span></div>
+          <div class="kv"><span class="k">duração</span><span class="v">permanente (∞)</span></div>
+        </div>
+        <div style="font-size:13px;color:var(--muted)">
+          <p style="margin:0 0 8px"><b style="color:var(--ink)">Interpretação — a confirmar.</b> A decodificação aponta para um bloqueio amplo de envio de mídia/conteúdo (fotos, vídeos, áudios, documentos, enquetes, links, fixar/convidar). O valor cru <code style="font-family:var(--mono)">91915648</code> contém um bit de ordem alta fora do esquema público conhecido, por isso o valor é exibido cru e marcado como <b style="color:var(--amber)">a confirmar</b>.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- conclusão -->
+    <div class="callout ok">
+      <h4>✅ Conclusão da Parte 1</h4>
+      <p><b>1 bot · 2 poderes.</b> O bot pode apenas <b>apagar mensagens</b> (8) e <b>banir/restringir usuários</b> (16). Não há segundo moderador, não há admin oculto/anônimo (valeria 1024) e ele não pode mudar infos, fixar, convidar nem promover ninguém.</p>
+    </div>
+  </section>
+
+  <!-- ============ PARTE 2 ============ -->
+  <section class="part p2">
+    <div class="part-head">
+      <div class="part-num">2</div>
+      <h2>Hipótese</h2>
+      <span class="tag">⚠ Cenário hipotético</span>
+    </div>
+    <div class="callout warn" style="margin:0 0 22px">
+      <div class="big-warn">
+        <span class="ic">⚠️</span>
+        <div>
+          <h4>Esta seção NÃO é o estado real do bot</h4>
+          <p>A tabela abaixo lista <b>todas</b> as flags de <code style="font-family:var(--mono)">ChatAdminRights</code> do Telegram para mostrar do que o bot <em>seria capaz</em> caso tivesse permissões totais. Na realidade (Parte 1) ele tem apenas 2 destas.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span><i class="dot g"></i> Já possui (parte da realidade)</span>
+      <span><i class="dot a"></i> Hipotético (não concedido)</span>
+    </div>
+
+    <div class="tablecard">
+      <div class="cap">Mapeamento completo · <b>ChatAdminRights</b> — cada bit é uma permissão independente</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Permissão (flag)</th>
+            <th class="num">valor</th>
+            <th class="num">bit</th>
+            <th>O que habilitaria na prática</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Mudar informações<br><span style="color:var(--muted);font-size:12px">change_info</span></td><td class="num">1</td><td class="num">0</td><td>Alterar nome, foto, descrição e configurações do grupo/canal.</td><td><span class="pill hyp">hipotético</span></td></tr>
+          <tr><td>Postar mensagens<br><span style="color:var(--muted);font-size:12px">post_messages</span></td><td class="num">2</td><td class="num">1</td><td>Publicar mensagens em nome do canal (apenas canais).</td><td><span class="pill hyp">hipotético</span></td></tr>
+          <tr><td>Editar mensagens<br><span style="color:var(--muted);font-size:12px">edit_messages</span></td><td class="num">4</td><td class="num">2</td><td>Editar mensagens de outros no canal (apenas canais).</td><td><span class="pill hyp">hipotético</span></td></tr>
+          <tr class="has"><td>Apagar mensagens<br><span style="color:var(--muted);font-size:12px">delete_messages</span></td><td class="num">8</td><td class="num">3</td><td>Excluir qualquer mensagem de qualquer membro.</td><td><span class="pill on">✅ possui</span></td></tr>
+          <tr class="has"><td>Banir / restringir<br><span style="color:var(--muted);font-size:12px">ban_users</span></td><td class="num">16</td><td class="num">4</td><td>Remover, banir e restringir o que os membros podem enviar.</td><td><span class="pill on">✅ possui</span></td></tr>
+          <tr><td>Convidar usuários<br><span style="color:var(--muted);font-size:12px">invite_users</span></td><td class="num">32</td><td class="num">5</td><td>Adicionar novos membros e gerar links de convite.</td><td><span class="pill hyp">hipotético</span></td></tr>
+          <tr><td>Fixar mensagens<br><span style="color:var(--muted);font-size:12px">pin_messages</span></td><td class="num">128</td><td class="num">7</td><td>Fixar e desfixar mensagens no topo do grupo.</td><td><span class="pill hyp">hipotético</span></td></tr>
+          <tr><td>Adicionar admins<br><span style="color:var(--muted);font-size:12px">add_admins</span></td><td class="num">512</td><td class="num">9</td><td>Promover outros membros a administradores e definir seus poderes.</td><td><span class="pill hyp">hipotético</span></td></tr>
+          <tr><td>Admin anônimo<br><span style="color:var(--muted);font-size:12px">anonymous</span></td><td class="num">1024</td><td class="num">10</td><td>Agir de forma oculta, em nome do grupo, sem expor a identidade.</td><td><span class="pill hyp">hipotético</span></td></tr>
+          <tr><td>Gerenciar chamadas<br><span style="color:var(--muted);font-size:12px">manage_call</span></td><td class="num">2048</td><td class="num">11</td><td>Iniciar, encerrar e administrar chamadas de voz/vídeo.</td><td><span class="pill hyp">hipotético</span></td></tr>
+          <tr><td>Outros<br><span style="color:var(--muted);font-size:12px">other</span></td><td class="num">4096</td><td class="num">12</td><td>Flag reservada do Telegram para permissões adicionais/futuras.</td><td><span class="pill hyp">hipotético</span></td></tr>
+          <tr><td>Gerenciar tópicos<br><span style="color:var(--muted);font-size:12px">manage_topics</span></td><td class="num">8192</td><td class="num">13</td><td>Criar, editar, fechar e reabrir tópicos em grupos-fórum.</td><td><span class="pill hyp">hipotético</span></td></tr>
+          <tr><td>Postar stories<br><span style="color:var(--muted);font-size:12px">post_stories</span></td><td class="num">16384</td><td class="num">14</td><td>Publicar stories em nome do canal/grupo.</td><td><span class="pill hyp">hipotético</span></td></tr>
+          <tr><td>Editar stories<br><span style="color:var(--muted);font-size:12px">edit_stories</span></td><td class="num">32768</td><td class="num">15</td><td>Editar stories já publicadas.</td><td><span class="pill hyp">hipotético</span></td></tr>
+          <tr><td>Apagar stories<br><span style="color:var(--muted);font-size:12px">delete_stories</span></td><td class="num">65536</td><td class="num">16</td><td>Remover stories publicadas.</td><td><span class="pill hyp">hipotético</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <h4>⚠️ Lembrete</h4>
+      <p>Se o bot tivesse <b>todas</b> as flags acima, o <code style="font-family:var(--mono)">rawValue</code> somaria <b>130 751</b> (1+2+4+8+16+32+128+512+1024+2048+4096+8192+16384+32768+65536). O valor real observado é apenas <b style="color:var(--green)">24</b>.</p>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer>
+    <div><b style="color:var(--ink)">Fonte dos dados.</b> Valores extraídos dos dumps anexados. <code>adminRights = 24</code>, <code>defaultBannedRights = 91915648</code>, <code>untilDate = 2147483647</code> e a identidade do bot aparecem de forma consistente nos três arquivos.</div>
+    <div class="files">
+      <span>📄 <code>Pasted--attributes-messageId-peerId-id--1780265201638_1780265201638.txt</code></span>
+      <span>📄 <code>Pasted--associatedStories-globalTags-rawValue-0-attributes--17_1780264027590.txt</code></span>
+      <span>📄 <code>Pasted--flags-rawValue-68-attributes-countdownBeginTime-17802-_1780263882144.txt</code></span>
+    </div>
+    <div style="margin-top:14px">Mapeamento de bits conforme o esquema oficial <code>ChatAdminRights</code> / <code>ChatBannedRights</code> da API do Telegram (TL schema). Material puramente documental — não altera o comportamento do bot.</div>
+  </footer>
+
+</div>
+</body>
+</html>
